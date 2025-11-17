@@ -1,7 +1,7 @@
 "use client"
 
-import { useState } from "react"
-import { useRouter } from 'next/navigation'
+import { useState, useEffect } from "react"
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -13,9 +13,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import Image from "next/image"
+import { api } from "@/lib/api"
 
 export function SignupForm() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -27,43 +30,179 @@ export function SignupForm() {
     city: "",
     state: "",
     zipCode: "",
-    paymentDetails: "",
+    // Payment method fields
+    paymentType: "",
+    // Bank account fields
+    bankName: "",
+    accountNumber: "",
+    confirmAccountNumber: "",
+    routingNumber: "",
+    accountHolder: "",
+    accountType: "",
+    // PayPal, Venmo, Zelle fields
+    paymentEmail: "",
+    paymentPhone: "",
     password: "",
+    referralCode: "",
     agreeToTerms: false,
   })
+  const [error, setError] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // Extract referrer ID from URL and pre-fill the field
+  useEffect(() => {
+    const ref = searchParams.get('ref')
+    if (ref) {
+      // Pre-fill referral code field from URL parameter
+      setFormData(prev => ({ ...prev, referralCode: ref }))
+    }
+  }, [searchParams])
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setError(null)
+    setLoading(true)
     
-    router.push("/dashboard")
+    try {
+      // Validate payment method
+      if (!formData.paymentType) {
+        setError('Please select a payment method')
+        setLoading(false)
+        return
+      }
+
+      if (formData.paymentType === 'Bank Account') {
+        if (!formData.bankName || !formData.accountNumber || !formData.routingNumber || !formData.accountHolder || !formData.accountType) {
+          setError('Please fill in all bank account fields')
+          setLoading(false)
+          return
+        }
+        if (formData.routingNumber.replace(/\D/g, '').length !== 9) {
+          setError('Routing number must be 9 digits')
+          setLoading(false)
+          return
+        }
+        if (formData.accountNumber !== formData.confirmAccountNumber) {
+          setError('Account numbers do not match. Please confirm your account number.')
+          setLoading(false)
+          return
+        }
+      } else if (formData.paymentType === 'PayPal') {
+        if (!formData.paymentEmail) {
+          setError('Please enter your PayPal email address')
+          setLoading(false)
+          return
+        }
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+        if (!emailRegex.test(formData.paymentEmail)) {
+          setError('Please enter a valid email address')
+          setLoading(false)
+          return
+        }
+      } else if (formData.paymentType === 'Venmo' || formData.paymentType === 'Zelle') {
+        if (!formData.paymentEmail && !formData.paymentPhone) {
+          setError(`Please enter your ${formData.paymentType} email or phone number`)
+          setLoading(false)
+          return
+        }
+        if (formData.paymentEmail) {
+          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+          if (!emailRegex.test(formData.paymentEmail)) {
+            setError('Please enter a valid email address')
+            setLoading(false)
+            return
+          }
+        }
+        if (formData.paymentPhone && formData.paymentPhone.replace(/\D/g, '').length < 10) {
+          setError('Please enter a valid phone number')
+          setLoading(false)
+          return
+        }
+      }
+
+      // Build payment method data
+      let paymentMethod: any = {
+        type: formData.paymentType,
+        isPrimary: true,
+        details: {}
+      }
+
+      if (formData.paymentType === 'Bank Account') {
+        paymentMethod.bankName = formData.bankName
+        paymentMethod.accountNumber = formData.accountNumber
+        paymentMethod.routingNumber = formData.routingNumber
+        paymentMethod.accountHolder = formData.accountHolder
+        paymentMethod.accountType = formData.accountType
+        paymentMethod.last4 = formData.accountNumber.slice(-4)
+        paymentMethod.details = {
+          accountType: formData.accountType,
+          fullAccountNumber: formData.accountNumber,
+          routingNumber: formData.routingNumber
+        }
+      } else if (formData.paymentType === 'PayPal') {
+        paymentMethod.email = formData.paymentEmail
+        paymentMethod.last4 = formData.paymentEmail.slice(-4)
+        paymentMethod.details = {
+          email: formData.paymentEmail
+        }
+      } else if (formData.paymentType === 'Venmo' || formData.paymentType === 'Zelle') {
+        if (formData.paymentEmail) {
+          paymentMethod.email = formData.paymentEmail
+          paymentMethod.last4 = formData.paymentEmail.slice(-4)
+        }
+        if (formData.paymentPhone) {
+          paymentMethod.phone = formData.paymentPhone
+          if (!paymentMethod.last4) {
+            paymentMethod.last4 = formData.paymentPhone.slice(-4)
+          }
+        }
+        paymentMethod.details = {
+          email: formData.paymentEmail || '',
+          phone: formData.paymentPhone || ''
+        }
+      }
+
+      // Use referral code from form input (could be from URL or manually entered)
+      // Trim and only send if not empty
+      const referralCode = formData.referralCode?.trim()
+      
+      await api.register({
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        email: formData.email,
+        phone: formData.phone,
+        address: formData.address,
+        city: formData.city,
+        state: formData.state,
+        zipCode: formData.zipCode,
+        taxIdType: formData.taxIdType || undefined,
+        taxId: formData.taxId || undefined,
+        paymentMethod: paymentMethod,
+        password: formData.password,
+        referrerId: referralCode || undefined // Only send if not empty
+      })
+      // Redirect to pending approval page - user needs admin approval before login
+      router.push("/pending-approval")
+    } catch (err: any) {
+      setError(err.message || "Registration failed. Please try again.")
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
     <div className="flex flex-col h-full">
       {/* Logo */}
       <div className="px-6 py-6 md:px-10 md:py-8 lg:px-12 lg:py-10">
-        <div className="flex items-center gap-2">
-          <svg
-            width="32"
-            height="32"
-            viewBox="0 0 32 32"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <circle cx="16" cy="10" r="3" fill="#2861a9" />
-            <circle cx="16" cy="22" r="3" fill="#2861a9" />
-            <circle cx="10" cy="16" r="3" fill="#2861a9" />
-            <circle cx="22" cy="16" r="3" fill="#2861a9" />
-            <path
-              d="M16 13 L16 19 M13 16 L19 16"
-              stroke="#2861a9"
-              strokeWidth="2"
-              strokeLinecap="round"
-            />
-          </svg>
-          <span className="text-xl md:text-2xl font-semibold text-[#131313]">
-            ClearMeds
-          </span>
+        <div className="flex items-center">
+          <Image
+            src="/logo-clearmeds.png"
+            alt="ClearMeds"
+            width={180}
+            height={48}
+            className="h-10 md:h-12 w-auto"
+            priority
+          />
         </div>
       </div>
 
@@ -239,20 +378,205 @@ export function SignupForm() {
               </div>
             </div>
 
-            {/* Payment Details */}
-            <div className="space-y-2">
-              <Label htmlFor="paymentDetails" className="text-[#6c727f] text-sm">
-                Payment Details <span className="text-[#131313]">*</span>
-              </Label>
-              <Input
-                id="paymentDetails"
-                value={formData.paymentDetails}
-                onChange={(e) =>
-                  setFormData({ ...formData, paymentDetails: e.target.value })
-                }
-                className="bg-[#f8f8f8] border-0 h-12"
-                required
-              />
+            {/* Payment Method Section */}
+            <div className="space-y-4 border-t border-[#e6e6e6] pt-6">
+              <h3 className="text-lg font-semibold text-[#131313]">Payment Method</h3>
+              
+              <div className="space-y-2">
+                <Label htmlFor="paymentType" className="text-[#6c727f] text-sm">
+                  Payment Type <span className="text-[#131313]">*</span>
+                </Label>
+                <Select
+                  value={formData.paymentType}
+                  onValueChange={(value) => {
+                    setFormData({ 
+                      ...formData, 
+                      paymentType: value,
+                      // Reset payment fields when changing type
+                      bankName: '',
+                      accountNumber: '',
+                      confirmAccountNumber: '',
+                      routingNumber: '',
+                      accountHolder: '',
+                      accountType: '',
+                      paymentEmail: '',
+                      paymentPhone: ''
+                    })
+                    setError(null)
+                  }}
+                >
+                  <SelectTrigger className="bg-[#f8f8f8] border-0 h-12">
+                    <SelectValue placeholder="Select payment type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Bank Account">Bank Account</SelectItem>
+                    <SelectItem value="PayPal">PayPal</SelectItem>
+                    <SelectItem value="Venmo">Venmo</SelectItem>
+                    <SelectItem value="Zelle">Zelle</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {formData.paymentType === 'Bank Account' && (
+                <>
+                  <div className="space-y-2">
+                    <Label htmlFor="bankName" className="text-[#6c727f] text-sm">
+                      Bank Name <span className="text-[#131313]">*</span>
+                    </Label>
+                    <Input
+                      id="bankName"
+                      placeholder="Enter bank name"
+                      value={formData.bankName}
+                      onChange={(e) => setFormData({ ...formData, bankName: e.target.value })}
+                      className="bg-[#f8f8f8] border-0 h-12"
+                      required
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="accountHolder" className="text-[#6c727f] text-sm">
+                      Account Holder Name <span className="text-[#131313]">*</span>
+                    </Label>
+                    <Input
+                      id="accountHolder"
+                      placeholder="Enter account holder name"
+                      value={formData.accountHolder}
+                      onChange={(e) => setFormData({ ...formData, accountHolder: e.target.value })}
+                      className="bg-[#f8f8f8] border-0 h-12"
+                      required
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="accountType" className="text-[#6c727f] text-sm">
+                      Account Type <span className="text-[#131313]">*</span>
+                    </Label>
+                    <Select
+                      value={formData.accountType}
+                      onValueChange={(value) => setFormData({ ...formData, accountType: value })}
+                    >
+                      <SelectTrigger className="bg-[#f8f8f8] border-0 h-12">
+                        <SelectValue placeholder="Select account type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Checking">Checking</SelectItem>
+                        <SelectItem value="Savings">Savings</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="routingNumber" className="text-[#6c727f] text-sm">
+                      Routing Number (ABA) <span className="text-[#131313]">*</span>
+                    </Label>
+                    <Input
+                      id="routingNumber"
+                      placeholder="123456789"
+                      value={formData.routingNumber}
+                      onChange={(e) => {
+                        const value = e.target.value.replace(/\D/g, '').slice(0, 9)
+                        setFormData({ ...formData, routingNumber: value })
+                      }}
+                      maxLength={9}
+                      className="bg-[#f8f8f8] border-0 h-12"
+                      required
+                    />
+                    <p className="text-xs text-[#6c727f]">9-digit ABA routing number</p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="accountNumber" className="text-[#6c727f] text-sm">
+                      Account Number <span className="text-[#131313]">*</span>
+                    </Label>
+                    <Input
+                      id="accountNumber"
+                      placeholder="Enter account number"
+                      value={formData.accountNumber}
+                      onChange={(e) => {
+                        const value = e.target.value.replace(/\D/g, '')
+                        setFormData({ ...formData, accountNumber: value })
+                      }}
+                      type="text"
+                      className="bg-[#f8f8f8] border-0 h-12"
+                      required
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="confirmAccountNumber" className="text-[#6c727f] text-sm">
+                      Confirm Account Number <span className="text-[#131313]">*</span>
+                    </Label>
+                    <Input
+                      id="confirmAccountNumber"
+                      placeholder="Re-enter account number"
+                      value={formData.confirmAccountNumber}
+                      onChange={(e) => {
+                        const value = e.target.value.replace(/\D/g, '')
+                        setFormData({ ...formData, confirmAccountNumber: value })
+                      }}
+                      type="password"
+                      className={`bg-[#f8f8f8] border-0 h-12 ${formData.confirmAccountNumber && formData.accountNumber !== formData.confirmAccountNumber ? 'border-red-500' : ''}`}
+                      required
+                    />
+                    {formData.confirmAccountNumber && formData.accountNumber !== formData.confirmAccountNumber && (
+                      <p className="text-xs text-red-600">Account numbers do not match</p>
+                    )}
+                  </div>
+                </>
+              )}
+
+              {formData.paymentType === 'PayPal' && (
+                <div className="space-y-2">
+                  <Label htmlFor="paymentEmail" className="text-[#6c727f] text-sm">
+                    PayPal Email <span className="text-[#131313]">*</span>
+                  </Label>
+                  <Input
+                    id="paymentEmail"
+                    type="email"
+                    placeholder="your.email@example.com"
+                    value={formData.paymentEmail}
+                    onChange={(e) => setFormData({ ...formData, paymentEmail: e.target.value })}
+                    className="bg-[#f8f8f8] border-0 h-12"
+                    required
+                  />
+                  <p className="text-xs text-[#6c727f]">Enter the email address associated with your PayPal account</p>
+                </div>
+              )}
+
+              {(formData.paymentType === 'Venmo' || formData.paymentType === 'Zelle') && (
+                <>
+                  <div className="space-y-2">
+                    <Label htmlFor="paymentEmail" className="text-[#6c727f] text-sm">
+                      Email <span className="text-[#131313]">*</span>
+                    </Label>
+                    <Input
+                      id="paymentEmail"
+                      type="email"
+                      placeholder="your.email@example.com"
+                      value={formData.paymentEmail}
+                      onChange={(e) => setFormData({ ...formData, paymentEmail: e.target.value })}
+                      className="bg-[#f8f8f8] border-0 h-12"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="paymentPhone" className="text-[#6c727f] text-sm">
+                      Phone Number <span className="text-[#131313]">*</span>
+                    </Label>
+                    <Input
+                      id="paymentPhone"
+                      type="tel"
+                      placeholder="(555) 123-4567"
+                      value={formData.paymentPhone}
+                      onChange={(e) => {
+                        const value = e.target.value.replace(/\D/g, '')
+                        setFormData({ ...formData, paymentPhone: value })
+                      }}
+                      className="bg-[#f8f8f8] border-0 h-12"
+                    />
+                    <p className="text-xs text-[#6c727f]">Enter your email or phone number (at least one required)</p>
+                  </div>
+                </>
+              )}
             </div>
 
             {/* Password */}
@@ -270,6 +594,26 @@ export function SignupForm() {
                 className="bg-[#f8f8f8] border-0 h-12"
                 required
               />
+            </div>
+
+            {/* Referral Code (Optional) */}
+            <div className="space-y-2">
+              <Label htmlFor="referralCode" className="text-[#6c727f] text-sm">
+                Referral Code <span className="text-[#6c727f] text-xs">(Optional)</span>
+              </Label>
+              <Input
+                id="referralCode"
+                type="text"
+                value={formData.referralCode}
+                onChange={(e) =>
+                  setFormData({ ...formData, referralCode: e.target.value })
+                }
+                placeholder="e.g., AFF-2025-0020"
+                className="bg-[#f8f8f8] border-0 h-12"
+              />
+              <p className="text-xs text-[#6c727f]">
+                Have a referral code? Enter it here. Leave blank if signing up directly.
+              </p>
             </div>
 
             {/* Terms Checkbox */}
@@ -294,18 +638,28 @@ export function SignupForm() {
               </Label>
             </div>
 
+            {/* Error Message */}
+            {error && (
+              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+                {error}
+              </div>
+            )}
+
             {/* Submit Button */}
             <Button
               type="submit"
-              className="w-full h-12 bg-[#2861a9] hover:bg-[#1f4d8a] text-white text-base font-medium rounded-lg"
+              disabled={loading}
+              className="w-full h-12 bg-[#2861a9] hover:bg-[#1f4d8a] text-white text-base font-medium rounded-lg disabled:opacity-50"
             >
-              Create Account
+              {loading ? "Creating Account..." : "Create Account"}
             </Button>
 
-            {/* Sponsor Text */}
-            <p className="text-center text-xs text-[#847f7f]">
-              sponsored by [name] of first [higher] affiliate.
-            </p>
+            {/* Info Text */}
+            {formData.referralCode && (
+              <p className="text-center text-xs text-[#6c727f] bg-blue-50 p-3 rounded">
+                ℹ️ Signing up with referral code: <span className="font-semibold">{formData.referralCode}</span>
+              </p>
+            )}
           </form>
         </div>
       </div>

@@ -1,21 +1,40 @@
-import { SignupForm } from "@/components/signup-form"
+'use client'
+
+import { useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { api } from '@/lib/api'
 
 export default function Page() {
-  return (
-    <div className="min-h-screen flex flex-col lg:flex-row">
-      {/* Form Section - Full width on mobile, left side on desktop */}
-      <div className="w-full lg:w-1/2 bg-white">
-        <SignupForm />
-      </div>
+  const router = useRouter()
 
-      {/* Image Section - Hidden on mobile, right side on desktop */}
-      <div className="hidden lg:flex lg:w-1/2 relative">
-        <img
-          src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-rTIU8MBuN1iogGUGUmtjwSN0CLgxeH.png"
-          alt="Smiling patient in healthcare consultation"
-          className="w-full h-full object-cover"
-        />
-      </div>
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const user = await api.getCurrentUser()
+        if (user) {
+          // User is logged in - redirect to dashboard
+          if (user.role === 'super_admin') {
+            router.push('/dashboard/admin')
+          } else {
+            router.push('/dashboard')
+          }
+        } else {
+          // User is not logged in - redirect to login
+          router.push('/login')
+        }
+      } catch (error) {
+        // Not logged in - redirect to login
+        router.push('/login')
+      }
+    }
+    
+    checkAuth()
+  }, [router])
+
+  // Show loading state while checking auth
+  return (
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#2861a9]"></div>
     </div>
   )
 }

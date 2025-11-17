@@ -5,9 +5,17 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { useState } from "react"
 
-export function ReferralCard() {
+interface ReferralCardProps {
+  data?: {
+    link: string;
+    commissionRate: string;
+  };
+}
+
+export function ReferralCard({ data }: ReferralCardProps) {
   const [copied, setCopied] = useState(false)
-  const referralLink = "www.clearmeds/usernamereferral"
+  const referralLink = data?.link || "www.clearmeds/usernamereferral"
+  const commissionRate = data?.commissionRate || "10%"
 
   const handleCopy = () => {
     navigator.clipboard.writeText(referralLink)
@@ -20,7 +28,7 @@ export function ReferralCard() {
       <div className="flex items-start justify-between mb-3">
         <h3 className="font-semibold text-[#131313]">Referral Link</h3>
         <Badge variant="secondary" className="bg-[#cfdae9] text-[#2861a9] hover:bg-[#cfdae9]">
-          10%
+          {commissionRate}
         </Badge>
       </div>
       

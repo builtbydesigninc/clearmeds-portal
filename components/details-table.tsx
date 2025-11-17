@@ -20,13 +20,19 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 
-export function DetailsTable() {
-  const transactions = [
-    { date: "2025-10-25", customer: "Wellness Clinic NYC", orderNumber: "ORD-2024-8821", amount: "$2,450", commission: "$367.5", status: "completed" },
-    { date: "2025-10-24", customer: "HealthFirst Medical", orderNumber: "ORD-2024-8820", amount: "$1,890", commission: "$283.5", status: "completed" },
-    { date: "2025-10-23", customer: "Vitality Health Center", orderNumber: "ORD-2024-8819", amount: "$3,200", commission: "$480", status: "processing" },
-    { date: "2025-10-22", customer: "Downtown Medical Group", orderNumber: "ORD-2024-8818", amount: "$1,650", commission: "$247.5", status: "completed" },
-    { date: "2025-10-21", customer: "Metro Health Solutions", orderNumber: "ORD-2024-8817", amount: "$2,800", commission: "$420", status: "declined" },
+interface DetailsTableProps {
+  data?: Array<{
+    date: string;
+    customer: string;
+    orderNumber: string;
+    amount: string;
+    commission: string;
+    status: string;
+  }>;
+}
+
+export function DetailsTable({ data }: DetailsTableProps) {
+  const transactions = data || [
     { date: "2025-10-25", customer: "Wellness Clinic NYC", orderNumber: "ORD-2024-8821", amount: "$2,450", commission: "$367.5", status: "completed" },
     { date: "2025-10-24", customer: "HealthFirst Medical", orderNumber: "ORD-2024-8820", amount: "$1,890", commission: "$283.5", status: "completed" },
     { date: "2025-10-23", customer: "Vitality Health Center", orderNumber: "ORD-2024-8819", amount: "$3,200", commission: "$480", status: "processing" },

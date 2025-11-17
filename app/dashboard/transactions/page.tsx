@@ -1,29 +1,50 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { DashboardSidebar } from '@/components/dashboard-sidebar'
 import { useSidebarCollapse } from '@/components/dashboard-sidebar-provider'
 import { Search, Filter, Download, ChevronLeft, ChevronRight, Globe, DollarSign, HandCoins } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-
-const transactionData = [
-  { date: '2025-10-25', customer: 'Wellness Clinic NYC', orderNumber: 'ORD-2024-8821', amount: 2450, commission: 367.5, status: 'completed' },
-  { date: '2025-10-24', customer: 'HealthFirst Medical', orderNumber: 'ORD-2024-8820', amount: 1890, commission: 283.5, status: 'completed' },
-  { date: '2025-10-23', customer: 'Vitality Health Center', orderNumber: 'ORD-2024-8819', amount: 3200, commission: 480, status: 'processing' },
-  { date: '2025-10-22', customer: 'Downtown Medical Group', orderNumber: 'ORD-2024-8818', amount: 1650, commission: 247.5, status: 'completed' },
-  { date: '2025-10-21', customer: 'Metro Health Solutions', orderNumber: 'ORD-2024-8817', amount: 2800, commission: 420, status: 'declined' },
-  { date: '2025-10-25', customer: 'Wellness Clinic NYC', orderNumber: 'ORD-2024-8821', amount: 2450, commission: 367.5, status: 'completed' },
-  { date: '2025-10-24', customer: 'HealthFirst Medical', orderNumber: 'ORD-2024-8820', amount: 1890, commission: 283.5, status: 'completed' },
-  { date: '2025-10-23', customer: 'Vitality Health Center', orderNumber: 'ORD-2024-8819', amount: 3200, commission: 480, status: 'processing' },
-  { date: '2025-10-22', customer: 'Downtown Medical Group', orderNumber: 'ORD-2024-8818', amount: 1650, commission: 247.5, status: 'completed' },
-  { date: '2025-10-21', customer: 'Metro Health Solutions', orderNumber: 'ORD-2024-8817', amount: 2800, commission: 420, status: 'declined' },
-]
+import { api } from '@/lib/api'
+import { requireNonSuperAdmin } from '@/lib/auth'
 
 export default function TransactionsPage() {
   const { isCollapsed } = useSidebarCollapse()
   const [searchQuery, setSearchQuery] = useState('')
   const [itemsPerPage, setItemsPerPage] = useState(10)
+  const [page, setPage] = useState(1)
+  const [transactionsData, setTransactionsData] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      await requireNonSuperAdmin()
+    }
+    checkAuth()
+  }, [])
+
+  useEffect(() => {
+    const fetchTransactions = async () => {
+      setLoading(true)
+      try {
+        const data = await api.getTransactions({
+          page,
+          limit: itemsPerPage,
+          search: searchQuery || undefined
+        })
+        setTransactionsData(data)
+      } catch (err: any) {
+        setError(err.message || "Failed to load transactions")
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchTransactions()
+  }, [page, itemsPerPage, searchQuery])
+
+  const transactionData = transactionsData?.transactions || []
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -56,7 +77,9 @@ export default function TransactionsPage() {
                 </span>
               </div>
               <p className="text-[#6c727f] text-sm mb-1">Total Transactions</p>
-              <p className="text-3xl font-semibold text-[#131313]">23</p>
+              <p className="text-3xl font-semibold text-[#131313]">
+                {transactionsData?.stats?.totalTransactions || 0}
+              </p>
             </div>
 
             {/* Total Amount */}
@@ -70,7 +93,9 @@ export default function TransactionsPage() {
                 </span>
               </div>
               <p className="text-[#6c727f] text-sm mb-1">Total Amount</p>
-              <p className="text-3xl font-semibold text-[#131313]">$18,270</p>
+              <p className="text-3xl font-semibold text-[#131313]">
+                ${transactionsData?.stats?.totalAmount?.toLocaleString() || '0'}
+              </p>
             </div>
 
             {/* Total Commission */}
@@ -84,7 +109,9 @@ export default function TransactionsPage() {
                 </span>
               </div>
               <p className="text-[#6c727f] text-sm mb-1">Total Commission</p>
-              <p className="text-3xl font-semibold text-[#131313]">$2,522.5</p>
+              <p className="text-3xl font-semibold text-[#131313]">
+                ${transactionsData?.stats?.totalCommission?.toLocaleString() || '0'}
+              </p>
             </div>
           </div>
 
@@ -100,7 +127,15 @@ export default function TransactionsPage() {
                       type="text"
                       placeholder="Search"
                       value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
+                      onChange={(e) => {
+                        setSearchQuery(e.target.value)
+                        setPage(1)
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          setPage(1)
+                        }
+                      }}
                       className="pl-10 w-full sm:w-64 bg-[#f8f8f8] border-[#e6e6e6]"
                     />
                   </div>
@@ -129,20 +164,34 @@ export default function TransactionsPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {transactionData.map((transaction, index) => (
-                    <tr key={index} className="border-b border-[#e6e6e6] hover:bg-[#f8f8f8] transition-colors">
-                      <td className="p-4 text-[#131313]">{transaction.date}</td>
-                      <td className="p-4 text-[#131313]">{transaction.customer}</td>
-                      <td className="p-4 text-[#6c727f]">{transaction.orderNumber}</td>
-                      <td className="p-4 text-[#131313]">${transaction.amount.toLocaleString()}</td>
-                      <td className="p-4 text-[#3ba321] font-medium">${transaction.commission}</td>
-                      <td className="p-4">
-                        <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(transaction.status)}`}>
-                          {transaction.status}
-                        </span>
-                      </td>
+                  {loading ? (
+                    <tr>
+                      <td colSpan={6} className="p-4 text-center text-[#6c727f]">Loading...</td>
                     </tr>
-                  ))}
+                  ) : error ? (
+                    <tr>
+                      <td colSpan={6} className="p-4 text-center text-red-600">{error}</td>
+                    </tr>
+                  ) : transactionData.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} className="p-4 text-center text-[#6c727f]">No transactions found</td>
+                    </tr>
+                  ) : (
+                    transactionData.map((transaction: any, index: number) => (
+                      <tr key={index} className="border-b border-[#e6e6e6] hover:bg-[#f8f8f8] transition-colors">
+                        <td className="p-4 text-[#131313]">{transaction.date}</td>
+                        <td className="p-4 text-[#131313]">{transaction.customer}</td>
+                        <td className="p-4 text-[#6c727f]">{transaction.orderNumber}</td>
+                        <td className="p-4 text-[#131313]">${typeof transaction.amount === 'number' ? transaction.amount.toLocaleString() : transaction.amount}</td>
+                        <td className="p-4 text-[#3ba321] font-medium">${typeof transaction.commission === 'number' ? transaction.commission.toLocaleString() : transaction.commission}</td>
+                        <td className="p-4">
+                          <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(transaction.status)}`}>
+                            {transaction.status}
+                          </span>
+                        </td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>
@@ -152,7 +201,10 @@ export default function TransactionsPage() {
               <div className="flex items-center gap-2">
                 <select
                   value={itemsPerPage}
-                  onChange={(e) => setItemsPerPage(Number(e.target.value))}
+                  onChange={(e) => {
+                    setItemsPerPage(Number(e.target.value))
+                    setPage(1)
+                  }}
                   className="px-3 py-2 border border-[#e6e6e6] rounded-lg text-sm bg-white text-[#131313]"
                 >
                   <option value={10}>10</option>
@@ -164,13 +216,20 @@ export default function TransactionsPage() {
                 <Button
                   variant="outline"
                   size="icon"
+                  onClick={() => setPage(p => Math.max(1, p - 1))}
+                  disabled={page === 1}
                   className="border-[#e6e6e6] hover:bg-[#f8f8f8]"
                 >
                   <ChevronLeft className="w-4 h-4" />
                 </Button>
+                <span className="text-sm text-[#6c727f]">
+                  Page {page} of {transactionsData?.pagination?.totalPages || 1}
+                </span>
                 <Button
                   variant="outline"
                   size="icon"
+                  onClick={() => setPage(p => Math.min((transactionsData?.pagination?.totalPages || 1), p + 1))}
+                  disabled={page >= (transactionsData?.pagination?.totalPages || 1)}
                   className="border-[#e6e6e6] hover:bg-[#f8f8f8]"
                 >
                   <ChevronRight className="w-4 h-4" />

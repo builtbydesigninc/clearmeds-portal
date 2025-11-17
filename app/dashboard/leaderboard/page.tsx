@@ -1,50 +1,10 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import { DashboardSidebar } from '@/components/dashboard-sidebar'
 import { useSidebarCollapse } from '@/components/dashboard-sidebar-provider'
 import { Medal, TrendingUp } from 'lucide-react'
-
-const tierData = [
-  {
-    name: 'Bronze',
-    range: '$0 - $25,000',
-    commission: '10% commission',
-    color: 'bg-gradient-to-b from-[#CD7F32] to-[#B87333]',
-    iconColor: 'text-[#CD7F32]',
-  },
-  {
-    name: 'Silver',
-    range: '$25,001 - $50,000',
-    commission: '12% commission',
-    color: 'bg-gradient-to-b from-[#C0C0C0] to-[#A8A8A8]',
-    iconColor: 'text-[#C0C0C0]',
-  },
-  {
-    name: 'Gold',
-    range: '$50,001 - $100,000',
-    commission: '15% commission',
-    color: 'bg-gradient-to-b from-[#FFD700] to-[#FFC700]',
-    iconColor: 'text-[#FFD700]',
-  },
-  {
-    name: 'Platinum',
-    range: '$100,001+',
-    commission: '18% commission',
-    color: 'bg-gradient-to-b from-[#A8C4A8] to-[#8FB08F]',
-    iconColor: 'text-[#A8C4A8]',
-  },
-]
-
-const leaderboardData = [
-  { rank: 1, badge: 'platinum', initials: 'MC', name: 'Michael Chen', email: 'doug@liveharderhealth.com', level: 'Level 2' },
-  { rank: 2, badge: 'gold', initials: 'MC', name: 'Michael Chen', email: 'doug@liveharderhealth.com', level: 'Level 2' },
-  { rank: 3, badge: 'silver', initials: 'MC', name: 'Michael Chen', email: 'doug@liveharderhealth.com', level: 'Level 2' },
-  { rank: 4, badge: 'bronze', initials: 'MC', name: 'Michael Chen', email: 'doug@liveharderhealth.com', level: 'Level 2' },
-  { rank: 5, badge: null, initials: 'MC', name: 'Michael Chen', email: 'doug@liveharderhealth.com', level: 'Level 2' },
-  { rank: 6, badge: null, initials: 'MC', name: 'Michael Chen', email: 'doug@liveharderhealth.com', level: 'Level 2' },
-  { rank: 7, badge: null, initials: 'MC', name: 'Michael Chen', email: 'doug@liveharderhealth.com', level: 'Level 2' },
-  { rank: 8, badge: null, initials: 'MC', name: 'Michael Chen', email: 'doug@liveharderhealth.com', level: 'Level 2' },
-]
+import { api } from '@/lib/api'
 
 const getBadgeColor = (badge: string | null) => {
   switch (badge) {
@@ -63,6 +23,59 @@ const getBadgeColor = (badge: string | null) => {
 
 export default function LeaderboardPage() {
   const { isCollapsed } = useSidebarCollapse()
+  const [leaderboardData, setLeaderboardData] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [period, setPeriod] = useState<'all-time' | 'this-month' | 'last-month'>('all-time')
+
+  useEffect(() => {
+    const fetchLeaderboard = async () => {
+      setLoading(true)
+      try {
+        const data = await api.getLeaderboard(period)
+        setLeaderboardData(data)
+      } catch (err: any) {
+        setError(err.message || "Failed to load leaderboard")
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchLeaderboard()
+  }, [period])
+
+  const tierData = leaderboardData?.tiers || [
+    {
+      name: 'Bronze',
+      range: '$0 - $25,000',
+      commission: '10% commission',
+      color: 'bg-gradient-to-b from-[#CD7F32] to-[#B87333]',
+      iconColor: 'text-[#CD7F32]',
+    },
+    {
+      name: 'Silver',
+      range: '$25,001 - $50,000',
+      commission: '12% commission',
+      color: 'bg-gradient-to-b from-[#C0C0C0] to-[#A8A8A8]',
+      iconColor: 'text-[#C0C0C0]',
+    },
+    {
+      name: 'Gold',
+      range: '$50,001 - $100,000',
+      commission: '15% commission',
+      color: 'bg-gradient-to-b from-[#FFD700] to-[#FFC700]',
+      iconColor: 'text-[#FFD700]',
+    },
+    {
+      name: 'Platinum',
+      range: '$100,001+',
+      commission: '18% commission',
+      color: 'bg-gradient-to-b from-[#A8C4A8] to-[#8FB08F]',
+      iconColor: 'text-[#A8C4A8]',
+    },
+  ]
+
+  const leaderboardList = leaderboardData?.leaderboard || []
+  const userRank = leaderboardData?.userRank || { currentRank: 7, currentAmount: 25500, nextRankAmount: 50000, percentage: 51 }
 
   return (
     <div className="flex min-h-screen bg-[#f8f8f8]">
@@ -76,21 +89,30 @@ export default function LeaderboardPage() {
             <div className="lg:col-span-1 bg-white rounded-lg p-6 shadow-sm border border-[#f8f8f8]">
               <div className="text-[#6c727f] text-sm mb-2">Your Current Rank</div>
               <div className="flex items-baseline justify-between mb-4">
-                <div className="text-4xl font-bold text-[#131313]">#7</div>
+                <div className="text-4xl font-bold text-[#131313]">
+                  #{userRank?.currentRank || 7}
+                </div>
                 <span className="px-3 py-1 bg-[#E8F0FE] text-[#2861a9] text-xs font-medium rounded-full">
-                  Next Rank #6
+                  Next Rank #{userRank?.currentRank ? userRank.currentRank - 1 : 6}
                 </span>
               </div>
 
               <div className="mt-6">
                 <div className="flex justify-between text-sm mb-2">
                   <span className="text-[#131313] font-medium">Progress to next rank</span>
-                  <span className="text-[#6c727f]">$45,820 / $50,000</span>
+                  <span className="text-[#6c727f]">
+                    ${userRank?.currentAmount?.toLocaleString() || '0'} / ${userRank?.nextRankAmount?.toLocaleString() || '0'}
+                  </span>
                 </div>
                 <div className="w-full bg-[#f8f8f8] rounded-full h-2 mb-2">
-                  <div className="bg-[#2861a9] h-2 rounded-full" style={{ width: '91.6%' }}></div>
+                  <div 
+                    className="bg-[#2861a9] h-2 rounded-full" 
+                    style={{ width: `${userRank?.percentage || 0}%` }}
+                  ></div>
                 </div>
-                <p className="text-xs text-[#6c727f]">$16,980 more in sales needed</p>
+                <p className="text-xs text-[#6c727f]">
+                  ${((userRank?.nextRankAmount || 0) - (userRank?.currentAmount || 0)).toLocaleString()} more in sales needed
+                </p>
               </div>
             </div>
 
@@ -119,13 +141,34 @@ export default function LeaderboardPage() {
               
               {/* Time Filter Tabs */}
               <div className="flex gap-2 border-b border-[#f8f8f8]">
-                <button className="px-4 py-2 text-sm font-medium text-[#2861a9] border-b-2 border-[#2861a9]">
+                <button 
+                  onClick={() => setPeriod('all-time')}
+                  className={`px-4 py-2 text-sm font-medium border-b-2 ${
+                    period === 'all-time' 
+                      ? 'text-[#2861a9] border-[#2861a9]' 
+                      : 'text-[#6c727f] border-transparent hover:text-[#2861a9]'
+                  }`}
+                >
                   All-Time
                 </button>
-                <button className="px-4 py-2 text-sm font-medium text-[#6c727f] hover:text-[#2861a9]">
+                <button 
+                  onClick={() => setPeriod('this-month')}
+                  className={`px-4 py-2 text-sm font-medium border-b-2 ${
+                    period === 'this-month' 
+                      ? 'text-[#2861a9] border-[#2861a9]' 
+                      : 'text-[#6c727f] border-transparent hover:text-[#2861a9]'
+                  }`}
+                >
                   This Month
                 </button>
-                <button className="px-4 py-2 text-sm font-medium text-[#6c727f] hover:text-[#2861a9]">
+                <button 
+                  onClick={() => setPeriod('last-month')}
+                  className={`px-4 py-2 text-sm font-medium border-b-2 ${
+                    period === 'last-month' 
+                      ? 'text-[#2861a9] border-[#2861a9]' 
+                      : 'text-[#6c727f] border-transparent hover:text-[#2861a9]'
+                  }`}
+                >
                   Last Month
                 </button>
               </div>
@@ -133,37 +176,51 @@ export default function LeaderboardPage() {
 
             {/* Leaderboard List */}
             <div className="space-y-4">
-              {leaderboardData.map((item) => (
-                <div
-                  key={item.rank}
-                  className="flex items-center gap-4 p-4 rounded-lg hover:bg-[#f8f8f8] transition-colors"
-                >
-                  {/* Rank Badge */}
-                  <div
-                    className={`w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 ${getBadgeColor(item.badge)}`}
-                  >
-                    {item.badge ? (
-                      <Medal className="w-6 h-6 text-white" />
-                    ) : (
-                      <span className="text-lg font-semibold text-[#2861a9]">{item.rank}</span>
-                    )}
-                  </div>
+              {loading ? (
+                <div className="text-center py-8 text-[#6c727f]">Loading leaderboard...</div>
+              ) : error ? (
+                <div className="text-center py-8 text-red-600">{error}</div>
+              ) : leaderboardList.length === 0 ? (
+                <div className="text-center py-8 text-[#6c727f]">No leaderboard data available</div>
+              ) : (
+                leaderboardList.map((item: any) => {
+                  const initials = item.name
+                    ? item.name.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2)
+                    : 'NA'
+                  
+                  return (
+                    <div
+                      key={item.rank}
+                      className="flex items-center gap-4 p-4 rounded-lg hover:bg-[#f8f8f8] transition-colors"
+                    >
+                      {/* Rank Badge */}
+                      <div
+                        className={`w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 ${getBadgeColor(item.badge)}`}
+                      >
+                        {item.badge ? (
+                          <Medal className="w-6 h-6 text-white" />
+                        ) : (
+                          <span className="text-lg font-semibold text-[#2861a9]">{item.rank}</span>
+                        )}
+                      </div>
 
-                  {/* Initials */}
-                  <div className="w-10 h-10 bg-[#E8F0FE] rounded-full flex items-center justify-center flex-shrink-0">
-                    <span className="text-sm font-semibold text-[#2861a9]">{item.initials}</span>
-                  </div>
+                      {/* Initials */}
+                      <div className="w-10 h-10 bg-[#E8F0FE] rounded-full flex items-center justify-center flex-shrink-0">
+                        <span className="text-sm font-semibold text-[#2861a9]">{initials}</span>
+                      </div>
 
-                  {/* Name and Email */}
-                  <div className="flex-1 min-w-0">
-                    <div className="font-medium text-[#131313]">{item.name}</div>
-                    <div className="text-sm text-[#6c727f] truncate">{item.email}</div>
-                  </div>
+                      {/* Name and Email */}
+                      <div className="flex-1 min-w-0">
+                        <div className="font-medium text-[#131313]">{item.name}</div>
+                        <div className="text-sm text-[#6c727f] truncate">{item.email}</div>
+                      </div>
 
-                  {/* Level Badge */}
-                  <div className="text-sm text-[#6c727f] flex-shrink-0">{item.level}</div>
-                </div>
-              ))}
+                      {/* Level Badge */}
+                      <div className="text-sm text-[#6c727f] flex-shrink-0">{item.level}</div>
+                    </div>
+                  )
+                })
+              )}
             </div>
           </div>
         </div>

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Copy, QrCode, Image, Video, FileText, Download, ExternalLink, Mail } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -8,6 +8,8 @@ import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { DashboardSidebar } from "@/components/dashboard-sidebar"
 import { useSidebar } from "@/components/dashboard-sidebar-provider"
+import { api } from "@/lib/api"
+import { requireNonSuperAdmin } from "@/lib/auth"
 
 const tabs = [
   { id: 'affiliate-links', label: 'Affiliate Links' },
@@ -23,160 +25,90 @@ export default function MarketingToolsPage() {
   const [utmSource, setUtmSource] = useState('')
   const [utmMedium, setUtmMedium] = useState('')
   const [utmCampaign, setUtmCampaign] = useState('')
-  
-  const [googleAdsEnabled, setGoogleAdsEnabled] = useState(true)
-  const [facebookAdsEnabled, setFacebookAdsEnabled] = useState(true)
-  
-  const defaultLink = "https://yoursite.com/ref/AFF-2024-1847"
-  const generatedLink = productId || utmSource || utmMedium || utmCampaign
-    ? `https://yoursite.com/ref/AFF-2024-1847?${productId ? `product=${productId}` : ''}${utmSource ? `&utm_source=${utmSource}` : ''}${utmMedium ? `&utm_medium=${utmMedium}` : ''}${utmCampaign ? `&utm_campaign=${utmCampaign}` : ''}`
-    : defaultLink
+  const [defaultLink, setDefaultLink] = useState('')
+  const [generatedLink, setGeneratedLink] = useState('')
+  const [marketingStats, setMarketingStats] = useState<any>(null)
+  const [mediaItems, setMediaItems] = useState<any[]>([])
+  const [resources, setResources] = useState<any[]>([])
+  const [integrations, setIntegrations] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      await requireNonSuperAdmin()
+    }
+    checkAuth()
+  }, [])
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [links, stats, media, res, integs] = await Promise.all([
+          api.getMarketingLinks(),
+          api.getMarketingStats(),
+          api.getMarketingMedia(),
+          api.getMarketingResources(),
+          api.getMarketingIntegrations()
+        ])
+        setDefaultLink(links.defaultLink)
+        setGeneratedLink(links.defaultLink)
+        setMarketingStats(stats)
+        setMediaItems(media)
+        setResources(res)
+        setIntegrations(integs)
+      } catch (err: any) {
+        console.error('Failed to load marketing data:', err)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchData()
+  }, [])
+
+  const handleGenerateLink = async () => {
+    try {
+      const result = await api.generateMarketingLink({
+        productId: productId || undefined,
+        utmSource: utmSource || undefined,
+        utmMedium: utmMedium || undefined,
+        utmCampaign: utmCampaign || undefined
+      })
+      setGeneratedLink(result.link)
+    } catch (err: any) {
+      console.error('Failed to generate link:', err)
+    }
+  }
+
+  useEffect(() => {
+    if (productId || utmSource || utmMedium || utmCampaign) {
+      handleGenerateLink()
+    } else {
+      setGeneratedLink(defaultLink)
+    }
+  }, [productId, utmSource, utmMedium, utmCampaign, defaultLink])
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text)
   }
 
-  const mediaItems = [
-    {
-      id: 1,
-      title: 'Product Banner 1920x1080',
-      category: 'Banners',
-      icon: Image,
-      action: 'download',
-    },
-    {
-      id: 2,
-      title: 'Product Demo Video',
-      category: 'Videos',
-      icon: Video,
-      action: 'download',
-    },
-    {
-      id: 3,
-      title: 'Product Brochure PDF',
-      category: 'Documents',
-      icon: FileText,
-      action: 'open',
-    },
-    {
-      id: 4,
-      title: 'Product Brochure PDF',
-      category: 'Documents',
-      icon: FileText,
-      action: 'download',
-    },
-    {
-      id: 5,
-      title: 'Product Banner 1920x1080',
-      category: 'Banners',
-      icon: Image,
-      action: 'open',
-    },
-    {
-      id: 6,
-      title: 'Product Demo Video',
-      category: 'Videos',
-      icon: Video,
-      action: 'open',
-    },
-  ]
+  const getMediaIcon = (type: string) => {
+    switch (type) {
+      case 'image': return Image
+      case 'video': return Video
+      default: return FileText
+    }
+  }
 
-  const promotionalResources = [
-    {
-      category: 'Email Templates',
-      icon: Mail,
-      items: [
-        {
-          id: 1,
-          title: 'Welcome Email',
-          description: 'Welcome to Our Premium Wellness Program',
-        },
-        {
-          id: 2,
-          title: 'Welcome Email',
-          description: 'Welcome to Our Premium Wellness Program',
-        },
-        {
-          id: 3,
-          title: 'Welcome Email',
-          description: 'Welcome to Our Premium Wellness Program',
-        },
-      ],
-    },
-    {
-      category: 'Sales Script',
-      icon: FileText,
-      items: [
-        {
-          id: 4,
-          title: 'Sales Script',
-          description: 'Welcome to Our Premium Wellness Program',
-        },
-        {
-          id: 5,
-          title: 'Sales Script',
-          description: 'Welcome to Our Premium Wellness Program',
-        },
-        {
-          id: 6,
-          title: 'Sales Script',
-          description: 'Welcome to Our Premium Wellness Program',
-        },
-      ],
-    },
-    {
-      category: 'Training Docs',
-      icon: FileText,
-      items: [
-        {
-          id: 7,
-          title: 'Training Document',
-          description: 'Welcome to Our Premium Wellness Program',
-        },
-        {
-          id: 8,
-          title: 'Training Document',
-          description: 'Welcome to Our Premium Wellness Program',
-        },
-        {
-          id: 9,
-          title: 'Training Document',
-          description: 'Welcome to Our Premium Wellness Program',
-        },
-      ],
-    },
-  ]
-
-  const marketingIntegrations = [
-    {
-      id: 'google-ads',
-      name: 'Google Ads',
-      description: 'Lorem Ipsum',
-      logo: 'https://www.google.com/favicon.ico',
-      enabled: googleAdsEnabled,
-      setEnabled: setGoogleAdsEnabled,
-      metrics: [
-        { label: 'Clicks', value: '2,847', change: '+33%' },
-        { label: 'Conversions', value: '43', change: '+33%' },
-        { label: 'Cost', value: '$425', change: '+33%' },
-        { label: 'Revenue', value: '$12,890', change: '+33%' },
-      ],
-    },
-    {
-      id: 'facebook-ads',
-      name: 'Facebook Ads',
-      description: 'Lorem Ipsum',
-      logo: 'https://www.facebook.com/favicon.ico',
-      enabled: facebookAdsEnabled,
-      setEnabled: setFacebookAdsEnabled,
-      metrics: [
-        { label: 'Clicks', value: '2,847', change: '+33%' },
-        { label: 'Conversions', value: '43', change: '+33%' },
-        { label: 'Cost', value: '$425', change: '+33%' },
-        { label: 'Revenue', value: '$12,890', change: '+33%' },
-      ],
-    },
-  ]
+  const handleIntegrationToggle = async (id: string, enabled: boolean) => {
+    try {
+      await api.updateMarketingIntegration(id, enabled)
+      setIntegrations((prev) =>
+        prev.map((int: any) => (int.id === id ? { ...int, enabled } : int))
+      )
+    } catch (err: any) {
+      console.error('Failed to update integration:', err)
+    }
+  }
 
   return (
     <div className="min-h-screen bg-[#f8f8f8]">
@@ -324,7 +256,9 @@ export default function MarketingToolsPage() {
                     </div>
                     <div>
                       <p className="text-[#6c727f] text-sm mb-1">Total Clicks</p>
-                      <p className="text-3xl font-bold text-[#131313]">4,823</p>
+                      <p className="text-3xl font-bold text-[#131313]">
+                        {marketingStats?.totalClicks?.toLocaleString() || '0'}
+                      </p>
                     </div>
                     <div className="mt-4 h-24 bg-[#f8f8f8] rounded flex items-center justify-center text-[#6c727f] text-sm">
                       chart placeholder
@@ -344,7 +278,9 @@ export default function MarketingToolsPage() {
                     </div>
                     <div>
                       <p className="text-[#6c727f] text-sm mb-1">Conversion Rate</p>
-                      <p className="text-3xl font-bold text-[#131313]">31.3%</p>
+                      <p className="text-3xl font-bold text-[#131313]">
+                        {marketingStats?.conversionRate?.toFixed(1) || '0'}%
+                      </p>
                     </div>
                     <div className="mt-4 h-24 bg-[#f8f8f8] rounded flex items-center justify-center text-[#6c727f] text-sm">
                       chart placeholder
@@ -359,40 +295,34 @@ export default function MarketingToolsPage() {
                 <h1 className="text-2xl font-semibold text-[#131313] mb-6">Media Library</h1>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {mediaItems.map((item) => (
-                    <div 
-                      key={item.id}
-                      className="bg-white rounded-lg border border-[#e6e6e6] p-6 hover:shadow-md transition-shadow"
-                    >
-                      <div className="flex items-start gap-4">
-                        <div className="w-12 h-12 bg-[#f8f8f8] rounded-lg flex items-center justify-center flex-shrink-0">
-                          <item.icon className="w-6 h-6 text-[#2861a9]" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <h3 className="text-base font-medium text-[#131313] mb-1">
-                            {item.title}
-                          </h3>
-                          <p className="text-sm text-[#6c727f]">{item.category}</p>
-                        </div>
-                      </div>
-                      
-                      <Button 
-                        className="w-full mt-6 bg-[#2861a9] hover:bg-[#2861a9]/90 text-white"
+                  {mediaItems.map((item: any) => {
+                    const Icon = getMediaIcon(item.type)
+                    return (
+                      <div 
+                        key={item.id}
+                        className="bg-white rounded-lg border border-[#e6e6e6] p-6 hover:shadow-md transition-shadow"
                       >
-                        {item.action === 'download' ? (
-                          <>
-                            <Download className="w-4 h-4 mr-2" />
-                            Download
-                          </>
-                        ) : (
-                          <>
-                            <ExternalLink className="w-4 h-4 mr-2" />
-                            Open
-                          </>
-                        )}
-                      </Button>
-                    </div>
-                  ))}
+                        <div className="flex items-start gap-4">
+                          <div className="w-12 h-12 bg-[#f8f8f8] rounded-lg flex items-center justify-center flex-shrink-0">
+                            <Icon className="w-6 h-6 text-[#2861a9]" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h3 className="text-base font-medium text-[#131313] mb-1">
+                              {item.title}
+                            </h3>
+                            <p className="text-sm text-[#6c727f]">{item.category}</p>
+                          </div>
+                        </div>
+                        
+                        <Button 
+                          className="w-full mt-6 bg-[#2861a9] hover:bg-[#2861a9]/90 text-white"
+                        >
+                          <Download className="w-4 h-4 mr-2" />
+                          Download
+                        </Button>
+                      </div>
+                    )
+                  })}
                 </div>
               </div>
             )}
@@ -403,60 +333,63 @@ export default function MarketingToolsPage() {
                 
                 {/* Promotional Resources Sections */}
                 <div className="space-y-6">
-                  {promotionalResources.map((section) => (
-                    <div 
-                      key={section.category}
-                      className="bg-white rounded-lg border border-[#e6e6e6] overflow-hidden"
-                    >
-                      <div className="grid grid-cols-1 lg:grid-cols-[200px_1fr]">
-                        {/* Category Sidebar */}
-                        <div className="bg-[#f8f8f8] p-6 flex flex-col items-center justify-center border-b lg:border-b-0 lg:border-r border-[#e6e6e6]">
-                          <div className="w-12 h-12 bg-white rounded-lg flex items-center justify-center mb-3">
-                            <section.icon className="w-6 h-6 text-[#2861a9]" />
-                          </div>
-                          <p className="text-sm font-medium text-[#131313] text-center">
-                            {section.category}
-                          </p>
-                        </div>
-
-                        {/* Items List */}
-                        <div className="divide-y divide-[#e6e6e6]">
-                          {section.items.map((item) => (
-                            <div 
-                              key={item.id}
-                              className="p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 hover:bg-[#f8f8f8] transition-colors"
-                            >
-                              <div className="flex-1">
-                                <h3 className="text-base font-medium text-[#131313] mb-1">
-                                  {item.title}
-                                </h3>
-                                <p className="text-sm text-[#6c727f]">
-                                  {item.description}
-                                </p>
-                              </div>
-                              
-                              <div className="flex items-center gap-2">
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="text-[#6c727f] hover:text-[#2861a9] hover:bg-[#2861a9]/10"
-                                  onClick={() => copyToClipboard(item.title)}
-                                >
-                                  <Copy className="w-4 h-4" />
-                                </Button>
-                                <Button 
-                                  className="bg-[#2861a9] hover:bg-[#2861a9]/90 text-white"
-                                >
-                                  <ExternalLink className="w-4 h-4 mr-2" />
-                                  Open
-                                </Button>
-                              </div>
+                  {resources.map((section: any) => {
+                    const Icon = section.category === 'Email Templates' ? Mail : FileText
+                    return (
+                      <div 
+                        key={section.category}
+                        className="bg-white rounded-lg border border-[#e6e6e6] overflow-hidden"
+                      >
+                        <div className="grid grid-cols-1 lg:grid-cols-[200px_1fr]">
+                          {/* Category Sidebar */}
+                          <div className="bg-[#f8f8f8] p-6 flex flex-col items-center justify-center border-b lg:border-b-0 lg:border-r border-[#e6e6e6]">
+                            <div className="w-12 h-12 bg-white rounded-lg flex items-center justify-center mb-3">
+                              <Icon className="w-6 h-6 text-[#2861a9]" />
                             </div>
-                          ))}
+                            <p className="text-sm font-medium text-[#131313] text-center">
+                              {section.category}
+                            </p>
+                          </div>
+
+                          {/* Items List */}
+                          <div className="divide-y divide-[#e6e6e6]">
+                            {section.items?.map((item: any) => (
+                              <div 
+                                key={item.id}
+                                className="p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 hover:bg-[#f8f8f8] transition-colors"
+                              >
+                                <div className="flex-1">
+                                  <h3 className="text-base font-medium text-[#131313] mb-1">
+                                    {item.title}
+                                  </h3>
+                                  <p className="text-sm text-[#6c727f]">
+                                    {item.description}
+                                  </p>
+                                </div>
+                                
+                                <div className="flex items-center gap-2">
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="text-[#6c727f] hover:text-[#2861a9] hover:bg-[#2861a9]/10"
+                                    onClick={() => copyToClipboard(item.title)}
+                                  >
+                                    <Copy className="w-4 h-4" />
+                                  </Button>
+                                  <Button 
+                                    className="bg-[#2861a9] hover:bg-[#2861a9]/90 text-white"
+                                  >
+                                    <ExternalLink className="w-4 h-4 mr-2" />
+                                    Open
+                                  </Button>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    )
+                  })}
                 </div>
               </div>
             )}
@@ -466,7 +399,7 @@ export default function MarketingToolsPage() {
                 <h1 className="text-2xl font-semibold text-[#131313] mb-6">Marketing Integration</h1>
                 
                 <div className="space-y-6">
-                  {marketingIntegrations.map((integration) => (
+                  {integrations.map((integration: any) => (
                     <div 
                       key={integration.id}
                       className="bg-white rounded-lg border border-[#e6e6e6] overflow-hidden"
@@ -474,54 +407,59 @@ export default function MarketingToolsPage() {
                       {/* Integration Header */}
                       <div className="p-6 flex items-center justify-between border-b border-[#e6e6e6]">
                         <div className="flex items-center gap-4">
-                          <div className="w-12 h-12 rounded-lg flex items-center justify-center overflow-hidden">
-                            <img 
-                              src={integration.logo || "/placeholder.svg"} 
-                              alt={integration.name}
-                              className="w-8 h-8 object-contain"
-                            />
+                          <div className="w-12 h-12 rounded-lg flex items-center justify-center overflow-hidden bg-[#f8f8f8]">
+                            <span className="text-lg font-semibold text-[#2861a9]">
+                              {integration.name?.charAt(0) || 'I'}
+                            </span>
                           </div>
                           <div>
                             <h2 className="text-lg font-semibold text-[#131313]">
                               {integration.name}
                             </h2>
                             <p className="text-sm text-[#6c727f]">
-                              {integration.description}
+                              Marketing integration
                             </p>
                           </div>
                         </div>
                         
                         <Switch 
-                          checked={integration.enabled}
-                          onCheckedChange={integration.setEnabled}
+                          checked={integration.enabled || false}
+                          onCheckedChange={(checked) => handleIntegrationToggle(integration.id, checked)}
                           className="data-[state=checked]:bg-[#3ba321]"
                         />
                       </div>
 
-                      {/* Metrics Grid */}
-                      <div className="p-6">
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                          {integration.metrics.map((metric, index) => (
-                            <div 
-                              key={index}
-                              className="bg-white border border-[#e6e6e6] rounded-lg p-4"
-                            >
-                              <div className="flex items-start justify-between mb-2">
-                                <p className="text-sm text-[#6c727f]">{metric.label}</p>
-                                <span className="text-xs font-medium text-[#3ba321] bg-[#e7f1e4] px-2 py-1 rounded">
-                                  {metric.change}
-                                </span>
+                      {/* Metrics Grid - Show if enabled */}
+                      {integration.enabled && (
+                        <div className="p-6">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                            {[
+                              { label: 'Clicks', value: '2,847', change: '+33%' },
+                              { label: 'Conversions', value: '43', change: '+33%' },
+                              { label: 'Cost', value: '$425', change: '+33%' },
+                              { label: 'Revenue', value: '$12,890', change: '+33%' },
+                            ].map((metric, index) => (
+                              <div 
+                                key={index}
+                                className="bg-white border border-[#e6e6e6] rounded-lg p-4"
+                              >
+                                <div className="flex items-start justify-between mb-2">
+                                  <p className="text-sm text-[#6c727f]">{metric.label}</p>
+                                  <span className="text-xs font-medium text-[#3ba321] bg-[#e7f1e4] px-2 py-1 rounded">
+                                    {metric.change}
+                                  </span>
+                                </div>
+                                <p className="text-2xl font-bold text-[#131313] mb-3">
+                                  {metric.value}
+                                </p>
+                                <div className="h-20 bg-[#f8f8f8] rounded flex items-center justify-center">
+                                  <span className="text-xs text-[#6c727f]">chart placeholder</span>
+                                </div>
                               </div>
-                              <p className="text-2xl font-bold text-[#131313] mb-3">
-                                {metric.value}
-                              </p>
-                              <div className="h-20 bg-[#f8f8f8] rounded flex items-center justify-center">
-                                <span className="text-xs text-[#6c727f]">chart placeholder</span>
-                              </div>
-                            </div>
-                          ))}
+                            ))}
+                          </div>
                         </div>
-                      </div>
+                      )}
                     </div>
                   ))}
                 </div>

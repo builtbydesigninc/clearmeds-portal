@@ -1,0 +1,886 @@
+ClearMeds Portal API Responses Log
+Started: 2025-11-16T16:54:21.579Z
+================================================================================
+
+[2025-11-16T16:54:22.790Z] POST /auth/register
+Request Data: {
+  "firstName": "John",
+  "lastName": "Doe",
+  "email": "john.doe@example.com",
+  "phone": "555-0101",
+  "address": "123 Main St",
+  "city": "New York",
+  "state": "NY",
+  "zipCode": "10001",
+  "password": "password123",
+  "referrerId": null
+}
+Error: API Error: 400 - {"code":"email_exists","message":"Email already registered","data":{"status":400}}
+Status Code: 400
+Error Response: {
+  "code": "email_exists",
+  "message": "Email already registered",
+  "data": {
+    "status": 400
+  }
+}
+--------------------------------------------------------------------------------
+
+[2025-11-16T16:54:23.554Z] POST /auth/login
+Request Data: {
+  "email": "john.doe@example.com",
+  "password": "password123"
+}
+Status Code: 200
+Response: {
+  "user_id": 12,
+  "email": "john.doe@example.com",
+  "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoxMiwiZW1haWwiOiJqb2huLmRvZUBleGFtcGxlLmNvbSIsInJvbGUiOiJhZmZpbGlhdGUiLCJpYXQiOjE3NjMzMTIwNjMsImV4cCI6MTc2MzkxNjg2M30.tdjWtXXKczHJNiSJdvOd63CUU3vUDuahG3fOekhjPPI",
+  "role": "affiliate",
+  "status": "active"
+}
+--------------------------------------------------------------------------------
+
+[2025-11-16T16:54:24.287Z] POST /auth/register
+Request Data: {
+  "firstName": "Jane",
+  "lastName": "Smith",
+  "email": "jane.smith@example.com",
+  "phone": "555-0102",
+  "address": "456 Oak Ave",
+  "city": "Los Angeles",
+  "state": "CA",
+  "zipCode": "90001",
+  "password": "password123",
+  "referrerId": 12
+}
+Error: API Error: 400 - {"code":"email_exists","message":"Email already registered","data":{"status":400}}
+Status Code: 400
+Error Response: {
+  "code": "email_exists",
+  "message": "Email already registered",
+  "data": {
+    "status": 400
+  }
+}
+--------------------------------------------------------------------------------
+
+[2025-11-16T16:54:25.106Z] POST /auth/login
+Request Data: {
+  "email": "jane.smith@example.com",
+  "password": "password123"
+}
+Status Code: 200
+Response: {
+  "user_id": 13,
+  "email": "jane.smith@example.com",
+  "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoxMywiZW1haWwiOiJqYW5lLnNtaXRoQGV4YW1wbGUuY29tIiwicm9sZSI6ImFmZmlsaWF0ZSIsImlhdCI6MTc2MzMxMjA2NCwiZXhwIjoxNzYzOTE2ODY0fQ.YjmjAVrMKNKLmR0Mg70ccYnKBM_QZ7Wqwk-SnZTKGxk",
+  "role": "affiliate",
+  "status": "active"
+}
+--------------------------------------------------------------------------------
+
+[2025-11-16T16:54:26.232Z] POST /auth/register
+Request Data: {
+  "firstName": "Bob",
+  "lastName": "Johnson",
+  "email": "bob.johnson@example.com",
+  "phone": "555-0103",
+  "address": "789 Pine Rd",
+  "city": "Chicago",
+  "state": "IL",
+  "zipCode": "60601",
+  "password": "password123",
+  "referrerId": 12
+}
+Error: API Error: 400 - {"code":"email_exists","message":"Email already registered","data":{"status":400}}
+Status Code: 400
+Error Response: {
+  "code": "email_exists",
+  "message": "Email already registered",
+  "data": {
+    "status": 400
+  }
+}
+--------------------------------------------------------------------------------
+
+[2025-11-16T16:54:27.058Z] POST /auth/login
+Request Data: {
+  "email": "bob.johnson@example.com",
+  "password": "password123"
+}
+Status Code: 200
+Response: {
+  "user_id": 14,
+  "email": "bob.johnson@example.com",
+  "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoxNCwiZW1haWwiOiJib2Iuam9obnNvbkBleGFtcGxlLmNvbSIsInJvbGUiOiJhZmZpbGlhdGUiLCJpYXQiOjE3NjMzMTIwNjYsImV4cCI6MTc2MzkxNjg2Nn0.ml9GWsPbNMHw9B4ec5mSijyPWi1EydMSATHK8msN68U",
+  "role": "affiliate",
+  "status": "active"
+}
+--------------------------------------------------------------------------------
+
+[2025-11-16T16:54:27.872Z] POST /auth/register
+Request Data: {
+  "firstName": "Alice",
+  "lastName": "Williams",
+  "email": "alice.williams@example.com",
+  "phone": "555-0104",
+  "address": "321 Elm St",
+  "city": "Houston",
+  "state": "TX",
+  "zipCode": "77001",
+  "password": "password123",
+  "referrerId": 13
+}
+Error: API Error: 400 - {"code":"email_exists","message":"Email already registered","data":{"status":400}}
+Status Code: 400
+Error Response: {
+  "code": "email_exists",
+  "message": "Email already registered",
+  "data": {
+    "status": 400
+  }
+}
+--------------------------------------------------------------------------------
+
+[2025-11-16T16:54:28.611Z] POST /auth/login
+Request Data: {
+  "email": "alice.williams@example.com",
+  "password": "password123"
+}
+Status Code: 200
+Response: {
+  "user_id": 15,
+  "email": "alice.williams@example.com",
+  "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoxNSwiZW1haWwiOiJhbGljZS53aWxsaWFtc0BleGFtcGxlLmNvbSIsInJvbGUiOiJhZmZpbGlhdGUiLCJpYXQiOjE3NjMzMTIwNjgsImV4cCI6MTc2MzkxNjg2OH0.o2tisVWC6IYYE2T8rp69xgobDfJBMhJ007bgpmUf_Ts",
+  "role": "affiliate",
+  "status": "active"
+}
+--------------------------------------------------------------------------------
+
+[2025-11-16T16:54:29.407Z] POST /auth/register
+Request Data: {
+  "firstName": "Charlie",
+  "lastName": "Brown",
+  "email": "charlie.brown@example.com",
+  "phone": "555-0105",
+  "address": "654 Maple Dr",
+  "city": "Phoenix",
+  "state": "AZ",
+  "zipCode": "85001",
+  "password": "password123",
+  "referrerId": 13
+}
+Error: API Error: 400 - {"code":"email_exists","message":"Email already registered","data":{"status":400}}
+Status Code: 400
+Error Response: {
+  "code": "email_exists",
+  "message": "Email already registered",
+  "data": {
+    "status": 400
+  }
+}
+--------------------------------------------------------------------------------
+
+[2025-11-16T16:54:30.216Z] POST /auth/login
+Request Data: {
+  "email": "charlie.brown@example.com",
+  "password": "password123"
+}
+Status Code: 200
+Response: {
+  "user_id": 16,
+  "email": "charlie.brown@example.com",
+  "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoxNiwiZW1haWwiOiJjaGFybGllLmJyb3duQGV4YW1wbGUuY29tIiwicm9sZSI6ImFmZmlsaWF0ZSIsImlhdCI6MTc2MzMxMjA3MCwiZXhwIjoxNzYzOTE2ODcwfQ.WWuD1c3d4yxraYGZbuBK-RoYNAZihkXXcUlpSo4yCK4",
+  "role": "affiliate",
+  "status": "active"
+}
+--------------------------------------------------------------------------------
+
+[2025-11-16T16:54:30.992Z] POST /auth/login
+Request Data: {
+  "email": "advait",
+  "password": "tashi11314"
+}
+Status Code: 200
+Response: {
+  "user_id": 1,
+  "email": "advait.nandeshwar@gmail.com",
+  "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoxLCJlbWFpbCI6ImFkdmFpdC5uYW5kZXNod2FyQGdtYWlsLmNvbSIsInJvbGUiOiJzdXBlcl9hZG1pbiIsImlhdCI6MTc2MzMxMjA3MCwiZXhwIjoxNzYzOTE2ODcwfQ.9qzyT_TmmexWdFwG4OYKvnEgocrXlIufCQxRL6osM5U",
+  "role": "super_admin",
+  "status": "active"
+}
+--------------------------------------------------------------------------------
+
+[2025-11-16T16:54:31.818Z] GET /admin/dashboard
+Status Code: 200
+Response: {
+  "stats": {
+    "totalAffiliates": 5,
+    "activeAffiliates": 0,
+    "pendingUsers": 0,
+    "totalSales": 0,
+    "totalCommissions": 0,
+    "totalPayouts": 0,
+    "activeReferrals": 12,
+    "pendingCommissions": 0
+  },
+  "pendingCommissions": [],
+  "processingPayouts": []
+}
+--------------------------------------------------------------------------------
+
+[2025-11-16T16:54:32.503Z] GET /admin/users?status=pending
+Status Code: 200
+Response: []
+--------------------------------------------------------------------------------
+
+[2025-11-16T16:54:33.299Z] POST /auth/login
+Request Data: {
+  "email": "john.doe@example.com",
+  "password": "password123"
+}
+Status Code: 200
+Response: {
+  "user_id": 12,
+  "email": "john.doe@example.com",
+  "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoxMiwiZW1haWwiOiJqb2huLmRvZUBleGFtcGxlLmNvbSIsInJvbGUiOiJhZmZpbGlhdGUiLCJpYXQiOjE3NjMzMTIwNzMsImV4cCI6MTc2MzkxNjg3M30.icEIZZLbcPV2X_duB8jw878cLolw1UgWRX14oXNfng0",
+  "role": "affiliate",
+  "status": "active"
+}
+--------------------------------------------------------------------------------
+
+[2025-11-16T16:54:33.985Z] GET /auth/user
+Status Code: 200
+Response: {
+  "id": 12,
+  "email": "john.doe@example.com",
+  "firstName": "John",
+  "lastName": "Doe",
+  "displayName": "John Doe",
+  "role": "affiliate",
+  "affiliate_id": null
+}
+--------------------------------------------------------------------------------
+
+[2025-11-16T16:54:34.731Z] GET /dashboard
+Status Code: 200
+Response: {
+  "profile": {
+    "name": "John Doe",
+    "email": "john.doe@example.com",
+    "company": "Test Company",
+    "avatar": "https://secure.gravatar.com/avatar/836f82db99121b3481011f16b49dfa5fbc714a0d1b1b9f784a1ebbbf5b39577f?s=96&d=mm&r=g",
+    "affiliateId": "",
+    "phone": "555-9999",
+    "bio": "Updated bio from seed script"
+  },
+  "referralLink": {
+    "link": "https://clearmeds.advait.site/?ref=",
+    "commissionRate": "10%"
+  },
+  "stats": {
+    "totalOrders": 0,
+    "totalSales": 0,
+    "commissionsEarned": 0,
+    "clinicsOnboarded": 2,
+    "changes": {
+      "orders": "+64%",
+      "sales": "-14%",
+      "commissions": "+33%",
+      "clinics": "-16%"
+    }
+  },
+  "rank": {
+    "currentRank": 1,
+    "currentAmount": 0,
+    "nextRankAmount": 25001,
+    "percentage": 0,
+    "nextRank": "Silver"
+  },
+  "leaderboard": {
+    "top10": [],
+    "userRank": 1
+  },
+  "recentTransactions": []
+}
+--------------------------------------------------------------------------------
+
+[2025-11-16T16:54:35.398Z] GET /users/profile
+Status Code: 200
+Response: {
+  "name": "John Doe",
+  "email": "john.doe@example.com",
+  "company": "Test Company",
+  "avatar": "https://secure.gravatar.com/avatar/836f82db99121b3481011f16b49dfa5fbc714a0d1b1b9f784a1ebbbf5b39577f?s=96&d=mm&r=g",
+  "affiliateId": "",
+  "phone": "555-9999",
+  "bio": "Updated bio from seed script"
+}
+--------------------------------------------------------------------------------
+
+[2025-11-16T16:54:36.058Z] GET /users/referral-link
+Status Code: 200
+Response: {
+  "link": "https://clearmeds.advait.site/?ref=",
+  "commissionRate": "10%"
+}
+--------------------------------------------------------------------------------
+
+[2025-11-16T16:54:36.755Z] GET /users/payment-details
+Status Code: 200
+Response: []
+--------------------------------------------------------------------------------
+
+[2025-11-16T16:54:37.642Z] GET /users/tax-info
+Status Code: 200
+Response: {
+  "taxId": "",
+  "taxIdType": "",
+  "businessName": "",
+  "taxAddress": ""
+}
+--------------------------------------------------------------------------------
+
+[2025-11-16T16:54:38.420Z] GET /referrals/network-full
+Status Code: 200
+Response: {
+  "stats": {
+    "totalAffiliates": 0,
+    "directReferrals": 0,
+    "indirectReferrals": 0,
+    "networkSales": 0
+  },
+  "networkTree": {
+    "id": "12",
+    "name": "John Doe",
+    "initials": "JD",
+    "earnings": 0,
+    "referrals": 2,
+    "level": 1,
+    "children": []
+  },
+  "directReferrals": [],
+  "breakdown": {
+    "level2": {
+      "commissionRate": "15",
+      "totalSales": 0,
+      "earned": 0
+    },
+    "level3": {
+      "commissionRate": "10",
+      "totalSales": 0,
+      "earned": 0
+    },
+    "extended": {
+      "commissionRate": "15",
+      "totalSales": 0,
+      "earned": 0
+    }
+  }
+}
+--------------------------------------------------------------------------------
+
+[2025-11-16T16:54:39.091Z] GET /referrals/stats
+Status Code: 200
+Response: {
+  "totalAffiliates": 0,
+  "directReferrals": 0,
+  "indirectReferrals": 0,
+  "networkSales": 0
+}
+--------------------------------------------------------------------------------
+
+[2025-11-16T16:54:39.755Z] GET /referrals/network
+Status Code: 200
+Response: {
+  "id": "12",
+  "name": "John Doe",
+  "initials": "JD",
+  "earnings": 0,
+  "referrals": 2,
+  "level": 1,
+  "children": []
+}
+--------------------------------------------------------------------------------
+
+[2025-11-16T16:54:40.464Z] GET /referrals/direct
+Status Code: 200
+Response: []
+--------------------------------------------------------------------------------
+
+[2025-11-16T16:54:41.189Z] GET /referrals/breakdown
+Status Code: 200
+Response: {
+  "level2": {
+    "commissionRate": "15",
+    "totalSales": 0,
+    "earned": 0
+  },
+  "level3": {
+    "commissionRate": "10",
+    "totalSales": 0,
+    "earned": 0
+  },
+  "extended": {
+    "commissionRate": "15",
+    "totalSales": 0,
+    "earned": 0
+  }
+}
+--------------------------------------------------------------------------------
+
+[2025-11-16T16:54:42.002Z] GET /transactions
+Status Code: 200
+Response: {
+  "stats": {
+    "totalTransactions": 0,
+    "totalAmount": 0,
+    "totalCommission": 0
+  },
+  "transactions": [],
+  "pagination": {
+    "page": 1,
+    "limit": 10,
+    "total": 0,
+    "totalPages": 0
+  }
+}
+--------------------------------------------------------------------------------
+
+[2025-11-16T16:54:42.716Z] GET /payments
+Status Code: 200
+Response: {
+  "stats": {
+    "totalPaid": 0,
+    "pending": 0,
+    "nextPayout": 0,
+    "payoutDate": "December 1, 2025"
+  },
+  "methods": [
+    {
+      "type": "bank_account",
+      "accountName": "John Doe",
+      "accountNumber": "****1234",
+      "bankName": "Test Bank"
+    }
+  ],
+  "history": []
+}
+--------------------------------------------------------------------------------
+
+[2025-11-16T16:54:43.437Z] GET /payments/methods
+Status Code: 200
+Response: [
+  {
+    "type": "bank_account",
+    "accountName": "John Doe",
+    "accountNumber": "****1234",
+    "bankName": "Test Bank"
+  }
+]
+--------------------------------------------------------------------------------
+
+[2025-11-16T16:54:44.357Z] GET /leaderboard?period=all-time
+Status Code: 200
+Response: {
+  "userRank": {
+    "currentRank": 1,
+    "currentAmount": 0,
+    "nextRankAmount": 25001,
+    "percentage": 0,
+    "nextRank": "Silver"
+  },
+  "tiers": [
+    {
+      "name": "Bronze",
+      "range": "$0 - $25,000",
+      "commission": "10% commission",
+      "color": "bg-gradient-to-b from-[#CD7F32] to-[#B87333]"
+    },
+    {
+      "name": "Silver",
+      "range": "$25,001 - $50,000",
+      "commission": "12% commission",
+      "color": "bg-gradient-to-b from-[#C0C0C0] to-[#A8A8A8]"
+    },
+    {
+      "name": "Gold",
+      "range": "$50,001 - $100,000",
+      "commission": "15% commission",
+      "color": "bg-gradient-to-b from-[#FFD700] to-[#FFC700]"
+    },
+    {
+      "name": "Platinum",
+      "range": "$100,001+",
+      "commission": "18% commission",
+      "color": "bg-gradient-to-b from-[#A8C4A8] to-[#8FB08F]"
+    }
+  ],
+  "leaderboard": []
+}
+--------------------------------------------------------------------------------
+
+[2025-11-16T16:54:45.124Z] GET /leaderboard/widget
+Status Code: 200
+Response: {
+  "top10": [],
+  "userRank": 1
+}
+--------------------------------------------------------------------------------
+
+[2025-11-16T16:54:45.996Z] GET /guides
+Status Code: 200
+Response: {
+  "checklist": [
+    {
+      "id": 1,
+      "text": "Complete your profile",
+      "completed": false
+    },
+    {
+      "id": 2,
+      "text": "Add payment method",
+      "completed": false
+    },
+    {
+      "id": 3,
+      "text": "Generate your affiliate link",
+      "completed": false
+    },
+    {
+      "id": 4,
+      "text": "Share your first referral",
+      "completed": false
+    },
+    {
+      "id": 5,
+      "text": "Make your first sale",
+      "completed": false
+    }
+  ],
+  "tutorials": [
+    {
+      "id": 1,
+      "title": "Getting Started: Your First Week as an Affiliate",
+      "description": "Welcome to Our Premium Wellness Program",
+      "category": "Sales"
+    },
+    {
+      "id": 2,
+      "title": "How to Use Marketing Tools Effectively",
+      "description": "Welcome to Our Premium Wellness Program",
+      "category": "Sales"
+    },
+    {
+      "id": 3,
+      "title": "Complete Affiliate Guide 2025",
+      "description": "Welcome to Our Premium Wellness Program",
+      "category": "Sales"
+    }
+  ],
+  "faqs": [
+    {
+      "id": 1,
+      "question": "How do I receive my commission payments?",
+      "answer": "Commission payments are processed on the 15th of each month for the previous month's sales. You can receive payments via bank transfer, PayPal, or other methods you've set up in the Payments section."
+    },
+    {
+      "id": 2,
+      "question": "How do I receive my commission payments?",
+      "answer": "Commission payments are processed on the 15th of each month for the previous month's sales."
+    },
+    {
+      "id": 3,
+      "question": "How do I receive my commission payments?",
+      "answer": "Commission payments are processed on the 15th of each month."
+    }
+  ]
+}
+--------------------------------------------------------------------------------
+
+[2025-11-16T16:54:46.814Z] GET /marketing/links
+Status Code: 200
+Response: {
+  "defaultLink": "https://clearmeds.advait.site/?ref="
+}
+--------------------------------------------------------------------------------
+
+[2025-11-16T16:54:47.514Z] GET /marketing/stats
+Status Code: 200
+Response: {
+  "totalClicks": 0,
+  "conversionRate": 0
+}
+--------------------------------------------------------------------------------
+
+[2025-11-16T16:54:48.215Z] GET /marketing/media
+Status Code: 200
+Response: [
+  {
+    "id": 1,
+    "title": "Product Banner 1920x1080",
+    "category": "Banners",
+    "type": "image"
+  },
+  {
+    "id": 2,
+    "title": "Product Demo Video",
+    "category": "Videos",
+    "type": "video"
+  },
+  {
+    "id": 3,
+    "title": "Product Brochure PDF",
+    "category": "Documents",
+    "type": "document"
+  }
+]
+--------------------------------------------------------------------------------
+
+[2025-11-16T16:54:48.904Z] GET /marketing/resources
+Status Code: 200
+Response: [
+  {
+    "category": "Email Templates",
+    "items": [
+      {
+        "id": 1,
+        "title": "Welcome Email",
+        "description": "Welcome to Our Premium Wellness Program"
+      }
+    ]
+  },
+  {
+    "category": "Sales Script",
+    "items": [
+      {
+        "id": 2,
+        "title": "Sales Script",
+        "description": "Welcome to Our Premium Wellness Program"
+      }
+    ]
+  }
+]
+--------------------------------------------------------------------------------
+
+[2025-11-16T16:54:49.646Z] GET /marketing/integrations
+Status Code: 200
+Response: [
+  {
+    "id": "google-ads",
+    "name": "Google Ads",
+    "enabled": true
+  },
+  {
+    "id": "facebook-ads",
+    "name": "Facebook Ads",
+    "enabled": true
+  }
+]
+--------------------------------------------------------------------------------
+
+[2025-11-16T16:54:50.366Z] PUT /users/profile
+Request Data: {
+  "phone": "555-9999",
+  "company": "Test Company",
+  "bio": "Updated bio from seed script"
+}
+Status Code: 200
+Response: {
+  "success": true
+}
+--------------------------------------------------------------------------------
+
+[2025-11-16T16:54:51.121Z] PUT /users/payment-details
+Request Data: {
+  "method": "paypal",
+  "email": "john.doe@example.com",
+  "accountName": "John Doe"
+}
+Status Code: 200
+Response: {
+  "success": true
+}
+--------------------------------------------------------------------------------
+
+[2025-11-16T16:54:51.889Z] PUT /users/tax-info
+Request Data: {
+  "taxIdType": "ssn",
+  "taxId": "123-45-6789"
+}
+Status Code: 200
+Response: {
+  "success": true
+}
+--------------------------------------------------------------------------------
+
+[2025-11-16T16:54:52.601Z] POST /payments/methods
+Request Data: {
+  "type": "bank_account",
+  "accountName": "John Doe",
+  "accountNumber": "****1234",
+  "bankName": "Test Bank"
+}
+Status Code: 200
+Response: {
+  "success": true
+}
+--------------------------------------------------------------------------------
+
+[2025-11-16T16:54:53.270Z] GET /users/referral-link
+Status Code: 200
+Response: {
+  "link": "https://clearmeds.advait.site/?ref=",
+  "commissionRate": "10%"
+}
+--------------------------------------------------------------------------------
+
+[2025-11-16T16:54:53.913Z] POST /marketing/generate-link
+Request Data: {
+  "productId": 123,
+  "utmSource": "email",
+  "utmMedium": "campaign",
+  "utmCampaign": "test"
+}
+Status Code: 200
+Response: {
+  "link": "https://clearmeds.advait.site/?ref=&product=123&utm_source=email&utm_medium=campaign&utm_campaign=test"
+}
+--------------------------------------------------------------------------------
+
+[2025-11-16T16:54:54.699Z] POST /auth/login
+Request Data: {
+  "email": "advait",
+  "password": "tashi11314"
+}
+Status Code: 200
+Response: {
+  "user_id": 1,
+  "email": "advait.nandeshwar@gmail.com",
+  "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoxLCJlbWFpbCI6ImFkdmFpdC5uYW5kZXNod2FyQGdtYWlsLmNvbSIsInJvbGUiOiJzdXBlcl9hZG1pbiIsImlhdCI6MTc2MzMxMjA5NCwiZXhwIjoxNzYzOTE2ODk0fQ.anHLlpyPhybbwo4-A_FrPeGFEQgZmVx6VuvW6-kc69o",
+  "role": "super_admin",
+  "status": "active"
+}
+--------------------------------------------------------------------------------
+
+[2025-11-16T16:54:55.376Z] GET /admin/dashboard
+Status Code: 200
+Response: {
+  "stats": {
+    "totalAffiliates": 5,
+    "activeAffiliates": 0,
+    "pendingUsers": 0,
+    "totalSales": 0,
+    "totalCommissions": 0,
+    "totalPayouts": 0,
+    "activeReferrals": 12,
+    "pendingCommissions": 0
+  },
+  "pendingCommissions": [],
+  "processingPayouts": []
+}
+--------------------------------------------------------------------------------
+
+[2025-11-16T16:54:56.053Z] GET /admin/users
+Status Code: 200
+Response: []
+--------------------------------------------------------------------------------
+
+[2025-11-16T16:54:56.748Z] GET /admin/users?status=pending
+Status Code: 200
+Response: []
+--------------------------------------------------------------------------------
+
+[2025-11-16T16:54:57.403Z] GET /admin/users?status=active
+Status Code: 200
+Response: []
+--------------------------------------------------------------------------------
+
+[2025-11-16T16:54:58.079Z] GET /admin/commissions
+Status Code: 200
+Response: []
+--------------------------------------------------------------------------------
+
+[2025-11-16T16:54:58.746Z] GET /admin/payouts
+Status Code: 200
+Response: []
+--------------------------------------------------------------------------------
+
+[2025-11-16T16:54:59.412Z] GET /admin/config
+Status Code: 200
+Response: {
+  "commissionRates": {
+    "level1": "15",
+    "level2": "10",
+    "level3": "5"
+  },
+  "payoutSettings": {
+    "frequency": "biweekly",
+    "minimum_threshold": "50"
+  }
+}
+--------------------------------------------------------------------------------
+
+[2025-11-16T16:55:00.126Z] GET /debug/status
+Status Code: 200
+Response: {
+  "debug_enabled": true,
+  "timestamp": "2025-11-16 16:54:59"
+}
+--------------------------------------------------------------------------------
+
+[2025-11-16T16:55:00.845Z] POST /admin/seed-data
+Request Data: {
+  "users": [
+    {
+      "user_id": 12,
+      "email": "john.doe@example.com"
+    },
+    {
+      "user_id": 13,
+      "email": "jane.smith@example.com"
+    },
+    {
+      "user_id": 14,
+      "email": "bob.johnson@example.com"
+    },
+    {
+      "user_id": 15,
+      "email": "alice.williams@example.com"
+    },
+    {
+      "user_id": 16,
+      "email": "charlie.brown@example.com"
+    }
+  ],
+  "commissions_per_user": 8,
+  "payouts_per_user": 3
+}
+Error: API Error: 404 - {"code":"rest_no_route","message":"No route was found matching the URL and request method.","data":{"status":404}}
+Status Code: 404
+Error Response: {
+  "code": "rest_no_route",
+  "message": "No route was found matching the URL and request method.",
+  "data": {
+    "status": 404
+  }
+}
+--------------------------------------------------------------------------------
+
+
+================================================================================
+SEED SCRIPT SUMMARY
+================================================================================
+
+Users Created: 0
+Users Existing: 5
+Users Failed: 0
+Commissions Created: 0
+Commissions Failed: 0
+Payouts Created: 0
+Payouts Failed: 0
+API Tests Passed: 22
+API Tests Failed: 0
+
+Completed: 2025-11-16T16:55:00.847Z

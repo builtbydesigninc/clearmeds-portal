@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import Link from "next/link"
+import Image from "next/image"
+import { api } from "@/lib/api"
 
 export function LoginForm() {
   const router = useRouter()
@@ -13,44 +15,52 @@ export function LoginForm() {
     email: "",
     password: "",
   })
+  const [error, setError] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setError(null)
+    setLoading(true)
     
-    router.push("/dashboard")
+    try {
+      const response = await api.login(formData.email, formData.password)
+      // Redirect super_admin to admin dashboard, others to regular dashboard
+      if (response.role === 'super_admin') {
+        router.push("/dashboard/admin")
+      } else {
+      router.push("/dashboard")
+      }
+    } catch (err: any) {
+      // Handle pending approval error
+      if (err.message && err.message.includes('pending')) {
+        setError("Your account is pending admin approval. Please wait for approval before logging in.")
+      } else {
+        setError(err.message || "Login failed. Please check your credentials.")
+      }
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full min-h-screen lg:min-h-0">
       {/* Logo */}
-      <div className="px-6 py-6 md:px-10 md:py-8 lg:px-12 lg:py-10">
-        <div className="flex items-center gap-2">
-          <svg
-            width="32"
-            height="32"
-            viewBox="0 0 32 32"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <circle cx="16" cy="10" r="3" fill="#2861a9" />
-            <circle cx="16" cy="22" r="3" fill="#2861a9" />
-            <circle cx="10" cy="16" r="3" fill="#2861a9" />
-            <circle cx="22" cy="16" r="3" fill="#2861a9" />
-            <path
-              d="M16 13 L16 19 M13 16 L19 16"
-              stroke="#2861a9"
-              strokeWidth="2"
-              strokeLinecap="round"
-            />
-          </svg>
-          <span className="text-xl md:text-2xl font-semibold text-[#131313]">
-            ClearMeds
-          </span>
+      <div className="px-6 py-6 md:px-10 md:py-8 lg:px-12 lg:py-10 flex-shrink-0">
+        <div className="flex items-center">
+          <Image
+            src="/logo-clearmeds.png"
+            alt="ClearMeds"
+            width={180}
+            height={48}
+            className="h-10 md:h-12 w-auto"
+            priority
+          />
         </div>
       </div>
 
       {/* Form Container */}
-      <div className="flex-1 px-6 pb-6 md:px-10 md:pb-10 lg:px-12 lg:pb-12 flex items-start lg:items-center">
+      <div className="flex-1 px-6 pb-6 md:px-10 md:pb-10 lg:px-12 lg:pb-12 flex items-center justify-center">
         <div className="w-full max-w-lg bg-white rounded-xl shadow-sm p-8 md:p-10">
           <h1 className="text-2xl md:text-3xl font-semibold text-[#131313] mb-6 md:mb-8">
             Login
@@ -91,7 +101,7 @@ export function LoginForm() {
               />
               <div className="flex justify-end">
                 <Link
-                  href="#"
+                  href="/forgot-password"
                   className="text-sm text-[#6c727f] hover:text-[#2861a9] hover:underline"
                 >
                   Forgot Password
@@ -99,19 +109,27 @@ export function LoginForm() {
               </div>
             </div>
 
+            {/* Error Message */}
+            {error && (
+              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+                {error}
+              </div>
+            )}
+
             {/* Submit Button */}
             <Button
               type="submit"
-              className="w-full h-12 bg-[#2861a9] hover:bg-[#1f4d8a] text-white text-base font-medium rounded-lg"
+              disabled={loading}
+              className="w-full h-12 bg-[#2861a9] hover:bg-[#1f4d8a] text-white text-base font-medium rounded-lg disabled:opacity-50"
             >
-              Login
+              {loading ? "Logging in..." : "Login"}
             </Button>
           </form>
         </div>
       </div>
 
       {/* Footer */}
-      <div className="px-6 py-4 md:px-10 md:py-6 lg:px-12 flex flex-wrap justify-center lg:justify-start gap-4 text-sm text-[#6c727f]">
+      <div className="px-6 py-4 md:px-10 md:py-6 lg:px-12 flex flex-wrap justify-center lg:justify-start gap-4 text-sm text-[#6c727f] flex-shrink-0">
         <a href="#" className="hover:underline">
           Terms & Conditions
         </a>
