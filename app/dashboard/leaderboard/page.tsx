@@ -118,7 +118,7 @@ export default function LeaderboardPage() {
 
             {/* Tier Cards */}
             <div className="lg:col-span-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              {tierData.map((tier) => (
+              {tierData.map((tier: { name: string; range: string; commission: string; color: string; iconColor: string }) => (
                 <div key={tier.name} className="bg-white rounded-lg overflow-hidden shadow-sm border border-[#f8f8f8]">
                   <div className={`h-2 ${tier.color}`}></div>
                   <div className="p-6 text-center">

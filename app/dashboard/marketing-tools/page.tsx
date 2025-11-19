@@ -34,16 +34,11 @@ export default function MarketingToolsPage() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const checkAuth = async () => {
-      await requireNonSuperAdmin()
-    }
-    checkAuth()
-  }, [])
-
-  useEffect(() => {
-    const fetchData = async () => {
+    const initializePage = async () => {
       try {
-        const [links, stats, media, res, integs] = await Promise.all([
+        // Wait for both auth check and all API calls to complete
+        const [, links, stats, media, res, integs] = await Promise.all([
+          requireNonSuperAdmin(),
           api.getMarketingLinks(),
           api.getMarketingStats(),
           api.getMarketingMedia(),
@@ -62,7 +57,7 @@ export default function MarketingToolsPage() {
         setLoading(false)
       }
     }
-    fetchData()
+    initializePage()
   }, [])
 
   const handleGenerateLink = async () => {
@@ -108,6 +103,17 @@ export default function MarketingToolsPage() {
     } catch (err: any) {
       console.error('Failed to update integration:', err)
     }
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#f8f8f8] flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#2861a9] mx-auto mb-4"></div>
+          <p className="text-[#6c727f]">Loading marketing tools...</p>
+        </div>
+      </div>
+    )
   }
 
   return (
