@@ -223,6 +223,13 @@ class APIClient {
     );
   }
 
+  async getSSOUrl() {
+    const response = await this.request<{ sso_url: string; token: string; expires_in: number }>(
+      '/auth/sso'
+    );
+    return response;
+  }
+
   // Dashboard methods
   async getDashboard() {
     return this.request<{

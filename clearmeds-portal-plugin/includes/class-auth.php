@@ -15,6 +15,9 @@ class ClearMeds_Auth {
     public function __construct() {
         global $wpdb;
         $this->wpdb = $wpdb;
+        
+        // Hook into WordPress init to handle SSO login
+        add_action('init', array($this, 'handle_sso_login'), 1);
     }
     
     /**
@@ -356,6 +359,63 @@ class ClearMeds_Auth {
         reset_password($user, $new_password);
         
         return array('success' => true, 'message' => 'Password has been reset successfully.');
+    }
+    
+    /**
+     * Handle SSO login from portal
+     */
+    public function handle_sso_login() {
+        // Only process if SSO token is present and user is not already logged in
+        if (!isset($_GET['sso_token']) || is_user_logged_in()) {
+            return;
+        }
+        
+        $sso_token = sanitize_text_field($_GET['sso_token']);
+        
+        // Validate token format
+        if (!preg_match('/^[a-f0-9]{64}$/', $sso_token)) {
+            return;
+        }
+        
+        // Get SSO data from transient
+        $sso_data = get_transient('clearmeds_sso_' . $sso_token);
+        
+        if (!$sso_data || !isset($sso_data['user_id'])) {
+            // Invalid or expired token
+            return;
+        }
+        
+        $user_id = intval($sso_data['user_id']);
+        
+        // Verify user exists
+        $user = get_userdata($user_id);
+        if (!$user) {
+            return;
+        }
+        
+        // Check if user is approved (for affiliates)
+        $affiliate = $this->get_affiliate_data($user_id);
+        if ($affiliate && $affiliate->status !== 'active') {
+            $role = ClearMeds_Utils::get_user_role($user_id);
+            // Only allow admin users to SSO if not approved
+            if ($role !== 'admin' && $role !== 'super_admin') {
+                return;
+            }
+        }
+        
+        // Log the user in
+        wp_set_current_user($user_id);
+        wp_set_auth_cookie($user_id, true);
+        
+        // Delete the SSO token (one-time use)
+        delete_transient('clearmeds_sso_' . $sso_token);
+        
+        // Remove sso_token from URL to clean it up
+        $redirect_url = remove_query_arg('sso_token');
+        
+        // Redirect to clean URL
+        wp_safe_redirect($redirect_url);
+        exit;
     }
 }
 

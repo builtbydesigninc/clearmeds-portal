@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { Home, Megaphone, Users, Receipt, CreditCard, BookOpen, BarChart3, Settings, LogOut, Menu, X, ChevronLeft, ChevronRight, Shield, DollarSign, UserCog, Clock, User } from 'lucide-react'
+import { Home, Megaphone, Users, Receipt, CreditCard, BookOpen, BarChart3, Settings, LogOut, Menu, X, ChevronLeft, ChevronRight, Shield, DollarSign, UserCog, Clock, User, ShoppingBag } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import { useState, useEffect } from "react"
 import { useSidebar } from "./dashboard-sidebar-provider"
@@ -24,6 +24,7 @@ export function DashboardSidebar() {
   const [isMobileOpen, setIsMobileOpen] = useState(false)
   const [userRole, setUserRole] = useState<'affiliate' | 'admin' | 'super_admin'>('affiliate')
   const [userData, setUserData] = useState<UserData | null>(null)
+  const [loadingShop, setLoadingShop] = useState(false)
   const pathname = usePathname()
 
   useEffect(() => {
@@ -76,8 +77,26 @@ export function DashboardSidebar() {
     }
   }
 
+  const handleShopClick = async (e: React.MouseEvent) => {
+    e.preventDefault()
+    setLoadingShop(true)
+    try {
+      const response = await api.getSSOUrl()
+      if (response.sso_url) {
+        window.open(response.sso_url, '_blank')
+      }
+    } catch (error) {
+      console.error('Failed to get SSO URL:', error)
+      // Fallback to shop URL without SSO
+      window.open('https://clearmeds.advait.site', '_blank')
+    } finally {
+      setLoadingShop(false)
+    }
+  }
+
   const navItems = [
     { icon: Home, label: "Home", href: "/dashboard" },
+    { icon: ShoppingBag, label: "Shop", href: "#", isShop: true },
     { icon: Megaphone, label: "Marketing Tools", href: "/dashboard/marketing-tools" },
     { icon: Users, label: "Network", href: "/dashboard/network" },
     { icon: Receipt, label: "Transactions", href: "/dashboard/transactions" },
@@ -91,6 +110,7 @@ export function DashboardSidebar() {
 
   const adminNavItems = [
     { icon: Shield, label: "Admin Dashboard", href: "/dashboard/admin" },
+    { icon: ShoppingBag, label: "Shop", href: "#", isShop: true },
     { icon: DollarSign, label: "Commissions", href: "/dashboard/admin/commissions" },
     { icon: Clock, label: "Pending Commissions", href: "/dashboard/admin/commissions/pending" },
     { icon: UserCog, label: "Users", href: "/dashboard/admin/users" },
@@ -143,6 +163,25 @@ export function DashboardSidebar() {
           {/* Admin Section - First for admins */}
           {isAdmin && adminNavItems.map((item) => {
             const Icon = item.icon
+            const isShop = (item as any).isShop
+            
+            if (isShop) {
+              return (
+                <Button
+                  key="shop-admin"
+                  variant="ghost"
+                  onClick={handleShopClick}
+                  disabled={loadingShop}
+                  className={`w-full ${isCollapsed ? 'justify-center px-0' : 'justify-start gap-3'} ${
+                    'text-[#6c727f] hover:text-[#131313] hover:bg-[#f8f8f8] disabled:opacity-50'
+                  }`}
+                >
+                  <Icon className="w-5 h-5" />
+                  {!isCollapsed && item.label}
+                </Button>
+              )
+            }
+            
             // Highlight if exact match, or if pathname starts with this href + '/' (child route)
             // But don't highlight if another admin item is a more specific match
             const isExactMatch = pathname === item.href
@@ -174,6 +213,25 @@ export function DashboardSidebar() {
           {!isSuperAdmin && navItems.map((item) => {
             const Icon = item.icon
             const isActive = pathname === item.href
+            const isShop = (item as any).isShop
+            
+            if (isShop) {
+              return (
+                <Button
+                  key="shop"
+                  variant="ghost"
+                  onClick={handleShopClick}
+                  disabled={loadingShop}
+                  className={`w-full ${isCollapsed ? 'justify-center px-0' : 'justify-start gap-3'} ${
+                    'text-[#6c727f] hover:text-[#131313] hover:bg-[#f8f8f8] disabled:opacity-50'
+                  }`}
+                >
+                  <Icon className="w-5 h-5" />
+                  {!isCollapsed && item.label}
+                </Button>
+              )
+            }
+            
             return (
               <Link key={item.href} href={item.href}>
                 <Button 
@@ -337,6 +395,28 @@ export function DashboardSidebar() {
               {/* Admin Section - First for admins */}
               {isAdmin && adminNavItems.map((item) => {
                 const Icon = item.icon
+                const isShop = (item as any).isShop
+                
+                if (isShop) {
+                  return (
+                    <Button
+                      key="shop-admin-mobile"
+                      variant="ghost"
+                      onClick={(e) => {
+                        setIsMobileOpen(false)
+                        handleShopClick(e)
+                      }}
+                      disabled={loadingShop}
+                      className={`w-full justify-start gap-3 ${
+                        'text-[#6c727f] hover:text-[#131313] hover:bg-[#f8f8f8] disabled:opacity-50'
+                      }`}
+                    >
+                      <Icon className="w-5 h-5" />
+                      {item.label}
+                    </Button>
+                  )
+                }
+                
                 // Highlight if exact match, or if pathname starts with this href + '/' (child route)
                 // But don't highlight if another admin item is a more specific match
                 const isExactMatch = pathname === item.href
@@ -369,6 +449,28 @@ export function DashboardSidebar() {
               {!isSuperAdmin && navItems.map((item) => {
                 const Icon = item.icon
                 const isActive = pathname === item.href
+                const isShop = (item as any).isShop
+                
+                if (isShop) {
+                  return (
+                    <Button
+                      key="shop"
+                      variant="ghost"
+                      onClick={(e) => {
+                        setIsMobileOpen(false)
+                        handleShopClick(e)
+                      }}
+                      disabled={loadingShop}
+                      className={`w-full justify-start gap-3 ${
+                        'text-[#6c727f] hover:text-[#131313] hover:bg-[#f8f8f8] disabled:opacity-50'
+                      }`}
+                    >
+                      <Icon className="w-5 h-5" />
+                      {item.label}
+                    </Button>
+                  )
+                }
+                
                 return (
                   <Link key={item.href} href={item.href}>
                     <Button 

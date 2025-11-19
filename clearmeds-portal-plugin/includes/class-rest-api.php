@@ -61,6 +61,12 @@ class ClearMeds_REST_API {
             'permission_callback' => '__return_true'
         ));
         
+        register_rest_route($this->namespace, '/auth/sso', array(
+            'methods' => 'GET',
+            'callback' => array($this, 'generate_sso_token'),
+            'permission_callback' => array($this, 'check_auth')
+        ));
+        
         // Combined Dashboard endpoint
         register_rest_route($this->namespace, '/dashboard', array(
             'methods' => 'GET',
@@ -640,6 +646,52 @@ class ClearMeds_REST_API {
         
         $this->debug_log('Reset password success', array('login' => $data['login']));
         return new WP_REST_Response($result, 200);
+    }
+    
+    /**
+     * Generate SSO token for shop login
+     */
+    public function generate_sso_token($request) {
+        // Get current user from JWT token
+        $token = ClearMeds_JWT::extract_token_from_header($request);
+        
+        if (!$token) {
+            return new WP_Error('unauthorized', 'Authentication required', array('status' => 401));
+        }
+        
+        $user = $this->auth->get_current_user_from_token($token);
+        
+        if (!$user) {
+            return new WP_Error('unauthorized', 'Invalid token', array('status' => 401));
+        }
+        
+        $user_id = $user['id'];
+        
+        // Generate a secure, one-time-use SSO token
+        $sso_token = bin2hex(random_bytes(32));
+        $expires_at = time() + 300; // 5 minutes expiration
+        
+        // Store SSO token in transient (WordPress cache) with user ID
+        set_transient('clearmeds_sso_' . $sso_token, array(
+            'user_id' => $user_id,
+            'created_at' => time()
+        ), 300); // 5 minutes TTL
+        
+        // Get shop URL from options or use default
+        $shop_url = get_option('clearmeds_shop_url', 'https://clearmeds.advait.site');
+        
+        // Build SSO URL
+        $sso_url = add_query_arg(array(
+            'sso_token' => $sso_token
+        ), rtrim($shop_url, '/'));
+        
+        $this->debug_log('SSO token generated', array('user_id' => $user_id));
+        
+        return new WP_REST_Response(array(
+            'sso_url' => $sso_url,
+            'token' => $sso_token,
+            'expires_in' => 300
+        ), 200);
     }
     
     /**
