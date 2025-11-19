@@ -1,11 +1,11 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, Suspense } from 'react'
 import { useRouter } from 'next/navigation'
 import { SignupForm } from "@/components/signup-form"
 import { api } from '@/lib/api'
 
-export default function RegisterPage() {
+function RegisterContent() {
   const router = useRouter()
 
   useEffect(() => {
@@ -44,6 +44,21 @@ export default function RegisterPage() {
         />
       </div>
     </div>
+  )
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#2861a9] mx-auto mb-4"></div>
+          <p className="text-[#6c727f]">Loading...</p>
+        </div>
+      </div>
+    }>
+      <RegisterContent />
+    </Suspense>
   )
 }
 
