@@ -22,11 +22,13 @@ function RegisterContent() {
         }
       } catch (error) {
         // Not logged in - allow access to registration page
+        // Silently ignore errors (user needs to register)
       }
     }
     
     checkAuth()
-  }, [router])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   return (
     <div className="min-h-screen flex flex-col lg:flex-row">

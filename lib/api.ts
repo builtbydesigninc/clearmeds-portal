@@ -83,8 +83,10 @@ class APIClient {
         // Clear invalid token and user cache
         this.clearUserCache();
         this.setToken(null);
-        // Redirect to login only if not already on login page
-        if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/login')) {
+        // Redirect to login only if not already on login or register page
+        if (typeof window !== 'undefined' && 
+            !window.location.pathname.startsWith('/login') && 
+            !window.location.pathname.startsWith('/register')) {
           window.location.href = '/login';
         }
         throw new APIError(401, 'Authentication required');
