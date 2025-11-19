@@ -22,11 +22,13 @@ export default function LoginPage() {
         }
       } catch (error) {
         // Not logged in - allow access to login page
+        // Silently ignore errors (user needs to login)
       }
     }
     
     checkAuth()
-  }, [router])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   return (
     <div className="h-screen flex flex-col lg:flex-row overflow-hidden">
